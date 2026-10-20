@@ -19,8 +19,8 @@ Market Data
 | Market Data | Obtain Binance Spot historical 1h OHLCV through CCXT. | Implemented for three symbols |
 | Bronze | Preserve distinct raw source observations and retrieval metadata. | Implemented |
 | Silver | Validate, normalize, deduplicate, and standardize UTC records. | Implemented for hourly crypto OHLCV |
-| Gold | Create curated, analysis-ready datasets and features. | Proposed |
-| Statistical / ML Research | Evaluate hypotheses and candidate models. | Proposed |
+| Gold | Create curated, analysis-ready datasets and features. | BTC/USDT gap-aware EDA timeline implemented; other Gold work proposed |
+| Statistical / ML Research | Evaluate hypotheses and candidate models. | Descriptive BTC/USDT EDA implemented; ML remains proposed |
 | Signal Generation | Produce `BUY`, `SELL`, `HOLD`, or `NO SIGNAL` outputs from complete data. | Proposed |
 | Risk Assessment | Assess exposure and constraints before manual action. | Proposed |
 | Dashboard | Present research, signals, and risk information. | Proposed |
@@ -50,6 +50,14 @@ coverage are counted separately. All unobserved requested hours retain the
 legacy `missing_candle_count`, and `ingestion_status` remains `incomplete`.
 An empty provider page is not treated as proof of completion.
 DuckDB can directly query Silver Parquet; no database service is required.
+
+QNT-002A adds a read-only BTC/USDT exploratory workflow. It derives a complete
+hourly timeline with null OHLCV at gaps, continuity-valid returns, raw hourly
+rolling volatility, and retrospective descriptive labels. Its local-only Gold
+Parquet, aggregate tables, JSON, and SVG charts are under
+`data/gold/qnt-002a/btc_usdt_1h/`. These are research artifacts, not trading
+signals or changes to Bronze/Silver. The report is
+`docs/QNT-002A_EDA_REPORT.md`.
 
 ## Data boundaries
 
