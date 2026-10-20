@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+.venv/
+venv/
+ENV/
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# Local data lake contents (keep directory markers)
+data/bronze/*
+!data/bronze/.gitkeep
+data/silver/*
+!data/silver/.gitkeep
+data/gold/*
+!data/gold/.gitkeep
+
+# OS and editor files
+.DS_Store
+.idea/
+.vscode/
