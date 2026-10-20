@@ -15,6 +15,7 @@ dependencies = [
   "duckdb",
   "pandera",
   "polars",
+  "pytz",
 ]
 
 [project.optional-dependencies]

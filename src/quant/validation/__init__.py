@@ -1,1 +1,1 @@
-"""Historical market-data validation interfaces (not implemented)."""
+"""Historical OHLCV normalization and quality checks."""

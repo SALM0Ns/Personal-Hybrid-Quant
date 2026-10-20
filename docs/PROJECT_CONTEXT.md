@@ -19,12 +19,16 @@ integrity or introducing automated execution.
 
 ## Current scope
 
-This initialization establishes documentation, package boundaries, data-layer
-directories, dependency declarations, linting, and smoke tests.
+The first historical pipeline supports Binance Spot 1-hour OHLCV ingestion for
+BTC/USDT, ETH/USDT, and SOL/USDT from 2021-01-01 UTC through the latest fully
+closed candle. It stores provider observations in Bronze, validated canonical
+candles in Silver, and a machine-readable coverage report.
+Coverage reporting distinguishes explicitly verified instrument availability
+from observed candles and unknown history. A first returned candle alone does
+not establish when an instrument became available.
 
 ## Out of scope
 
-- Market-data ingestion or downloads.
 - Trading strategy implementation.
 - ML-model training.
 - Broker-account connectivity.

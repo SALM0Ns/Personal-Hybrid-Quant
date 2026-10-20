@@ -9,14 +9,18 @@
 | Operating mode | Semi-Automated |
 | Primary timeframe | 1H |
 | Trade execution | Manual only |
+| Initial market | Crypto Spot |
+| Initial provider | Binance via CCXT |
+| Historical storage and query | Parquet + DuckDB |
+| Initial instruments | BTC/USDT, ETH/USDT, SOL/USDT |
+| Historical start | 2021-01-01 00:00 UTC |
+| Historical end | Latest fully closed candle available at execution time |
+| Coverage evidence policy | First returned API candle does not establish listing date; per-symbol availability starts require documented evidence |
 
 ## Proposals awaiting approval
 
 | Proposal | Rationale |
 | --- | --- |
-| Crypto-first development | A bounded first data domain for the historical-data foundation. |
-| Binance via CCXT | Candidate initial crypto historical-data interface. |
-| Parquet plus DuckDB | Candidate storage and local analytical-query combination. |
 | LightGBM / XGBoost | Candidate model families for later research. |
 | Streamlit | Candidate research/dashboard interface. |
 

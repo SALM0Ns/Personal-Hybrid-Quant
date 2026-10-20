@@ -26,13 +26,19 @@ dist/
 *.key
 secrets/
 
-# Local data lake contents (keep directory markers)
-data/bronze/*
-!data/bronze/.gitkeep
-data/silver/*
-!data/silver/.gitkeep
-data/gold/*
-!data/gold/.gitkeep
+# Market datasets and generated reports
+/data/**
+!/data/.gitkeep
+!/data/bronze/
+!/data/bronze/.gitkeep
+!/data/silver/
+!/data/silver/.gitkeep
+!/data/gold/
+!/data/gold/.gitkeep
+
+# Local databases
+*.duckdb
+*.db
 
 # OS and editor files
 .DS_Store
