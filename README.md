@@ -6,9 +6,29 @@ data engineering for 1-hour (`1H`) research.
 
 ## Status
 
-Historical Binance Spot OHLCV ingestion is implemented for BTC/USDT, ETH/USDT,
-and SOL/USDT at `1h`. Research, signals, brokerage connections, and live
-trading are not implemented.
+The initial Binance Spot `1h` historical data-engineering phase is complete
+for BTC/USDT, ETH/USDT, and SOL/USDT; documented historical gaps remain.
+The initial research phase focuses on BTC/USDT:
+
+- QNT-001: historical OHLCV ingestion and Bronze/Silver validation completed.
+- QNT-001B: published Binance archive verification completed.
+- QNT-001C: documented anomaly investigation completed; root causes remain
+  unresolved.
+- QNT-002A: gap-aware statistical exploratory analysis completed.
+- QNT-002B: offline feature engineering, anomaly-manifest audit, and
+  research-only Gold feature validation completed.
+- Next: QNT-003 statistical research **design only**; no implementation is
+  authorized by this roadmap entry.
+
+The seven implemented BTC/USDT Gold features are `log_return_1h`,
+`volatility_24h`, `volatility_168h`, `momentum_24h`, `momentum_168h`,
+`volume_change_1h`, and `normalized_range_1h`. The current local Gold feature
+snapshot is for descriptive research only: historical publication availability
+is not verified, its anomaly manifest remains a candidate, and no rows are
+decision-eligible. It is **not approved for trading or backtesting**. Signals,
+brokerage connections, and live trading are not implemented. See the
+[feature contract](docs/QNT-002B_FEATURE_CONTRACT.md) and
+[real-data audit](docs/QNT-002B_REAL_DATA_AUDIT.md).
 
 ## Planned flow
 
@@ -119,7 +139,8 @@ ruff check .
 
 ## Layout
 
-- `src/quant/`: future application packages.
+- `src/quant/`: implemented data, validation, research, and feature packages;
+  later trading components remain proposed.
 - `data/bronze`, `data/silver`, `data/gold`: local data-lake layers; contents
   are ignored by Git.
 - `docs/`: project constraints, architecture, decisions, and research notes.
