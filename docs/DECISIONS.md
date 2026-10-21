@@ -17,6 +17,20 @@
 | Historical end | Latest fully closed candle available at execution time |
 | Coverage evidence policy | First returned API candle does not establish listing date; per-symbol availability starts require documented evidence |
 
+### QNT-002B Feature Contract v1 — approved
+
+| Decision | Approved policy |
+| --- | --- |
+| Availability evidence | `timestamp` is the UTC candle open and `candle_end_at` is one hour later; `available_at` is null without actual publication or observation evidence. Candle closure alone is not verified publication. |
+| Anomaly provenance | Use a versioned manifest separate from Silver with timestamp, type, affected fields, source evidence, severity, review status, and version; do not change historical OHLCV. |
+| Feature set | Exactly the seven features in `docs/QNT-002B_FEATURE_CONTRACT.md`; rolling volatility uses sample standard deviation (`ddof=1`) and multi-candle calculations require strict hourly continuity. |
+| Formula alignment | `momentum_24h = C_t / C_(t-24h) - 1`; `momentum_168h = C_t / C_(t-168h) - 1`; `normalized_range_1h = (H_t - L_t) / C_t`. |
+| Preserve and flag | Retain calculable research values and propagate quality metadata. `decision_eligible` is false for anomaly-affected rows or unknown availability; no silent repair or nulling of valid values. |
+| Snapshot provenance | Record `feature_version`, `source_snapshot_sha256`, and `generated_at`; processing time is distinct from historical data availability. |
+
+This approval finalizes the design only. It does not authorize feature
+implementation, backtesting, signals, models, or a Gold build.
+
 ## Proposals awaiting approval
 
 | Proposal | Rationale |

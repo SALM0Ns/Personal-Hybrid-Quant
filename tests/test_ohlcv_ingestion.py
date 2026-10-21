@@ -185,9 +185,7 @@ def test_missing_hour_detected_without_fill(tmp_path) -> None:
     assert report["coverage_status"] == "unknown"
     assert report["unknown_coverage_candle_count"] == 1
     assert report["missing_within_verified_coverage_count"] == 0
-    assert report["unobserved_timestamps"] == [
-        (START + timedelta(hours=1)).isoformat()
-    ]
+    assert report["unobserved_timestamps"] == [(START + timedelta(hours=1)).isoformat()]
     assert [row["timestamp"] for row in silver(tmp_path)] == [
         START,
         START + timedelta(hours=2),

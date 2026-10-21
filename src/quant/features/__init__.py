@@ -1,1 +1,1 @@
-"""Feature engineering interfaces (not implemented)."""
+"""Offline BTC/USDT feature calculations and anomaly provenance."""
