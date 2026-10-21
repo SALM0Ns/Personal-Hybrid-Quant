@@ -40,7 +40,16 @@ backtesting, signals, models, or automated execution.
 | Regression gate | A complete clean GitHub Actions pytest run and Ruff lint/format checks tied to the exact commit SHA are required for QNT-002B closure; a partial local test subset is not equivalent. |
 | Verified evidence | GitHub Actions run `39575760185` succeeded for commit `aa5ac8d6511eb7ea9b26ef6df47308ab338ea6ef`: 84 tests passed, Ruff lint passed, and Ruff format passed. |
 | Research boundary | The candidate manifest has unresolved evidence limitations and unknown historical publication availability. The pinned Gold snapshot has zero decision-eligible rows and is not approved for trading or backtesting. |
-| Next stage | QNT-003 statistical research design only; this entry does not authorize implementation, signals, backtesting, or ML. |
+| Next stage at QNT-002B closure | QNT-003 statistical research design only; this historical entry did not authorize implementation, signals, backtesting, or ML. |
+
+## QNT-003 research design closure — approved protocol only
+
+| Item | Confirmed status or policy |
+| --- | --- |
+| Milestone and protocol | QNT-003A–D research design completed and owner-reviewed as `qnt-003d-design-v1`; `docs/QNT-003B_EVALUATION_PROTOCOL.md` is the proposed evaluation contract and `docs/QNT-003D_FINAL_RESEARCH_DESIGN.md` summarizes the audit resolutions. |
+| Proposed comparison | Three statistical baselines—zero return, expanding historical mean, and AR(1)—and one Ridge comparator using exactly the seven existing BTC/USDT Gold features. These are design specifications, not executed models or findings. |
+| Research lanes | Lane A contains separately reported valid-target and fixed-manifest retrospective samples; any statistical evaluation requires separate authorization. Lane B verified point-in-time research is blocked pending auditable historical availability and decision eligibility. |
+| Execution boundary | No predictive evaluation has been performed. Trading backtesting remains blocked; this design approval does not authorize targets, model fitting, scoring, signals, or orders. |
 
 ## Proposals awaiting approval
 

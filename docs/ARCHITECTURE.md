@@ -20,7 +20,7 @@ Market Data
 | Bronze | Preserve distinct raw source observations and retrieval metadata. | Implemented |
 | Silver | Validate, normalize, deduplicate, and standardize UTC records. | Implemented for hourly crypto OHLCV |
 | Gold | Create curated, analysis-ready datasets and features. | BTC/USDT gap-aware EDA and research-only seven-feature snapshot implemented; other Gold work proposed |
-| Statistical / ML Research | Evaluate hypotheses and candidate models. | Descriptive BTC/USDT EDA implemented; QNT-003 research design next; ML remains proposed |
+| Statistical / ML Research | Evaluate hypotheses and candidate models. | Descriptive BTC/USDT EDA implemented; QNT-003 statistical evaluation designed but not executed; ML remains proposed |
 | Signal Generation | Produce `BUY`, `SELL`, `HOLD`, or `NO SIGNAL` outputs from complete data. | Proposed |
 | Risk Assessment | Assess exposure and constraints before manual action. | Proposed |
 | Dashboard | Present research, signals, and risk information. | Proposed |
@@ -86,6 +86,16 @@ and Ruff lint/format checks on a clean GitHub Actions runner. Run
 `aa5ac8d6511eb7ea9b26ef6df47308ab338ea6ef`. CI validates the code's
 regression behavior; it does not fetch market data, resolve source anomalies,
 or establish historical point-in-time availability.
+
+QNT-003 is a completed **research design**, not an implemented evaluation.
+Protocol `qnt-003d-design-v1` defines the next-hour BTC/USDT target, three
+statistical baselines (zero return, expanding mean, AR(1)), one seven-feature
+Ridge comparator, chronological validation, and forecast/score accounting.
+Its Lane A is retrospective and needs separate authorization before any
+statistical evaluation. Lane B requires verified historical point-in-time
+source, feature, and manifest availability and is currently blocked. Trading
+backtesting remains blocked. No QNT-003 target, model, prediction, or metric
+has been generated. See `docs/QNT-003D_FINAL_RESEARCH_DESIGN.md`.
 
 ## Data boundaries
 

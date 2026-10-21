@@ -17,8 +17,8 @@ The initial research phase focuses on BTC/USDT:
 - QNT-002A: gap-aware statistical exploratory analysis completed.
 - QNT-002B: offline feature engineering, anomaly-manifest audit, and
   research-only Gold feature validation completed.
-- Next: QNT-003 statistical research **design only**; no implementation is
-  authorized by this roadmap entry.
+- QNT-003: statistical research **design** completed and owner-reviewed under
+  protocol `qnt-003d-design-v1`; no predictive evaluation was performed.
 
 The seven implemented BTC/USDT Gold features are `log_return_1h`,
 `volatility_24h`, `volatility_168h`, `momentum_24h`, `momentum_168h`,
@@ -29,6 +29,14 @@ decision-eligible. It is **not approved for trading or backtesting**. Signals,
 brokerage connections, and live trading are not implemented. See the
 [feature contract](docs/QNT-002B_FEATURE_CONTRACT.md) and
 [real-data audit](docs/QNT-002B_REAL_DATA_AUDIT.md).
+
+The [QNT-003 final research design](docs/QNT-003D_FINAL_RESEARCH_DESIGN.md)
+specifies three statistical baselines (zero return, expanding historical
+mean, and AR(1)) and one seven-feature Ridge comparator. Lane A is a
+retrospective statistical study requiring separate authorization before
+evaluation. Lane B requires verified point-in-time availability and remains
+blocked. Trading backtesting also remains blocked; the protocol reports no
+predictive findings or model performance.
 
 ## Planned flow
 
