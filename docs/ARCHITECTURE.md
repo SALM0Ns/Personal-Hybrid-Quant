@@ -140,6 +140,27 @@ The ledger is **not** an approved point-in-time training or backtesting dataset.
 Forecast, score, refit, ML fitting/evaluation, chart integration, Lane A/B
 execution, signals, and trading remain unimplemented or blocked.
 
+PQTA-003D-1 — Synthetic Evaluation Protocol Implemented; Architect Review Pending.
+`src/quant/research/evaluation_protocol.py` adds pure validation and eligibility
+helpers under the unchanged `qnt-003d-design-v1` and
+`pqta-003b-origin-ledger-v1` contracts. It reuses the dataset split function
+and forecast-side field allowlist, admits historical outcomes only after
+theoretical closure, and keeps input eligibility, history counts, daily
+refit scheduling, immutable emission status, and ex-post score status separate.
+Its 120 synthetic tests do not read historical Parquet. No model, forecast,
+predictive metric, or Lane A execution is implemented by this milestone;
+Lane B remains blocked and trading/backtesting are not authorized.
+
+Protocol interface clarifications: `validate_hour` accepts any aware,
+hour-aligned datetime whose offset is zero at the supplied instant, including
+custom timezone objects, consistent with PQTA-003C's UTC representation check.
+`historical_target_eligible` selects completed history only: before closure
+it returns false without evaluating outcome flags; at or after closure both
+flags must be Booleans. It is not a current-origin emission interface.
+`validate_score_state` validates final classifications, with no pending status.
+Both `scored` and `emitted_but_not_scored` require theoretical target closure;
+an abstention may have `not_scored_no_forecast` from its forecast origin.
+
 ## Data boundaries
 
 - Data moves forward through layers; downstream outputs must be reproducible

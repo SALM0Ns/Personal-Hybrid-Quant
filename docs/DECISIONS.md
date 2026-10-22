@@ -79,6 +79,17 @@ point-in-time availability remains unverified. Lane A evaluation is not
 authorized, and Lane B remains blocked. This approval grants no training,
 forecasting, scoring, backtesting, signals, or trading authorization.
 
+## PQTA-003D-1 synthetic protocol implementation record
+
+PQTA-003D-1 — Synthetic Evaluation Protocol Implemented; Architect Review Pending.
+The owner authorized pure protocol helpers and synthetic validation only,
+preserving `qnt-003d-design-v1` and `pqta-003b-origin-ledger-v1`.
+The implementation reuses the approved split and forecast-field contracts;
+82 new synthetic tests and all 166 existing regression tests passed.
+No models were implemented, forecasts generated, predictive metrics
+calculated, or Lane A evaluation executed. Lane B remains blocked;
+trading/backtesting and dependency installation are not authorized.
+
 ## Proposals awaiting approval
 
 | Proposal | Rationale |

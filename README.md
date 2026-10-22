@@ -37,6 +37,7 @@ Silver data. It is not a live trading system.
 | PQTA-003A | ML research and dataset inspection | Complete; read-only | Reviewed the governing protocol and local source/feature metadata; no target or evaluation was produced. |
 | PQTA-003B | Research dataset and ML architecture | Complete — Architecture Approved (Design Only) | Proposed research-only origin, forecast, and score contracts; no implementation or evaluation. |
 | PQTA-003C | Research-only origin dataset | Complete — Architecture Approved (Research Dataset Only) | Pinned Silver/Gold/manifest audit, next-hour target, split and quality masks, and immutable local origin ledger; no forecasts or evaluation. |
+| PQTA-003D-1 | Synthetic evaluation protocol | Synthetic Evaluation Protocol Implemented; Architect Review Pending | Pure time, historical-label admission, sample/history, refit scheduling, and status checks; synthetic validation only. |
 | PQTA-003 | ML Training & Evaluation | Planned; not implemented | The origin ledger is not an approved training dataset; fitting and retrospective evaluation require separate authorization. |
 | PQTA-004 | Signal Decision Engine | Planned; not operational | Future decision policy; the chart currently reports `NO SIGNAL`. |
 | PQTA-005 | Chart Signal Integration | Planned; not operational | Future chart markers; none are displayed today. |
@@ -265,6 +266,12 @@ tests, including the new synthetic adapter tests; Ruff lint/format and
 PQTA-003C added 44 synthetic dataset tests; the full local suite passed 166
 tests, Ruff lint/format and `pip check` passed. Its pinned historical ledger
 passed acceptance and an identical rerun reused the same artifact bytes.
+PQTA-003D-1 has 120 synthetic protocol tests after Architect-review
+hardening; the full local suite passed 286 tests, with Ruff lint/format
+and `pip check` passing. Protocol helpers
+are implemented; models remain unimplemented. No forecasts or predictive
+metrics were produced, Lane A was not executed, Lane B remains blocked,
+and trading/backtesting are not authorized.
 Tests use synthetic data and local fixtures; the HTTP test
 binds a temporary localhost
 port. The prior QNT-002B CI run passed its then-current 84-test suite; it did

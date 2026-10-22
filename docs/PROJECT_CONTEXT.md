@@ -34,6 +34,14 @@ The ledger contains a next-hour target for research accounting but no model,
 forecast, score, signal, or verified historical decision-availability claim.
 The application still displays `NO SIGNAL`; its chart reads Silver history.
 
+PQTA-003D-1 — Synthetic Evaluation Protocol Implemented; Architect Review Pending.
+Pure protocol helpers and synthetic tests now enforce theoretical time,
+completed historical-label admission, sample and history eligibility,
+refit scheduling, and forecast/score state invariants. Models are not
+implemented; no forecasts or predictive metrics were produced and Lane A
+was not executed. Historical publication remains unverified, Lane B is
+blocked, and trading/backtesting are not authorized.
+
 ## Out of scope
 
 - Trading strategy implementation.
