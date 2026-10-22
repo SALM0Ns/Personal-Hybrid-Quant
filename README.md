@@ -38,6 +38,7 @@ Silver data. It is not a live trading system.
 | PQTA-003B | Research dataset and ML architecture | Complete — Architecture Approved (Design Only) | Proposed research-only origin, forecast, and score contracts; no implementation or evaluation. |
 | PQTA-003C | Research-only origin dataset | Complete — Architecture Approved (Research Dataset Only) | Pinned Silver/Gold/manifest audit, next-hour target, split and quality masks, and immutable local origin ledger; no forecasts or evaluation. |
 | PQTA-003D-1 | Synthetic evaluation protocol | Synthetic Evaluation Protocol Implemented; Architect Review Pending | Pure time, historical-label admission, sample/history, refit scheduling, and status checks; synthetic validation only. |
+| PQTA-003D-2 | Statistical baseline components | Synthetic Statistical Baselines Implemented; Architect Review Pending | In-memory Zero Return, hourly Mean, and midnight AR(1); synthetic validation only, no historical evaluation. |
 | PQTA-003 | ML Training & Evaluation | Planned; not implemented | The origin ledger is not an approved training dataset; fitting and retrospective evaluation require separate authorization. |
 | PQTA-004 | Signal Decision Engine | Planned; not operational | Future decision policy; the chart currently reports `NO SIGNAL`. |
 | PQTA-005 | Chart Signal Integration | Planned; not operational | Future chart markers; none are displayed today. |
@@ -69,6 +70,7 @@ flowchart LR
     silver --> origins["PQTA-003C research-only origin ledger"]
     goldfeatures --> origins
     manifest --> origins
+    baselines["PQTA-003D-2 synthetic baseline components; no historical execution"]
     supplied["Supplied in-memory BTC/USDT OHLCV; no fetch"] --> adapter["PQTA-002B shared validation adapter"] --> features
     silver --> preview["Read-only historical preview backend"]
     preview --> http["Loopback HTTP application"] --> chart["TradingView Lightweight Charts frontend"]
@@ -101,7 +103,8 @@ PQTA-003C constructs a separate local, research-only origin ledger from the
 pinned Silver, Gold, and candidate manifest. It carries retrospective
 next-hour target and quality audit fields, not a forecast or an approved
 training dataset. Outcome-side fields are excluded from its allowlisted
-forecast-side view. No baseline, Ridge fit, prediction, score, or backtest ran.
+forecast-side view. No historical baseline, Ridge fit, prediction, score,
+or backtest ran.
 See the [dataset implementation report](docs/PQTA-003C_DATASET_IMPLEMENTATION.md).
 
 The QNT research architecture proposes eventual statistical/ML research,
@@ -134,6 +137,7 @@ installation; unpinned package versions can change on a future install.
 | Tests / lint | pytest / Ruff | 9.1.1 / 0.17.1 installed | Regression tests / lint and format | Implemented |
 | Build backend | Hatchling | Declared without version pin; not installed in `pqta` runtime | Editable package build in isolated build environment | Build-time only |
 | Future modeling | Ridge design; LightGBM / XGBoost proposals | Not declared or installed in `pqta` | Possible later predictive research | **Planned only; no model execution** |
+| Statistical baselines | Python standard library, `math.fsum` | Existing Python runtime; no added package | Zero Return, Mean, and AR(1) | Implemented and tested on synthetic inputs only |
 | Future interface proposal | Streamlit | Not declared or installed in `pqta` | Earlier dashboard proposal | **Planned only; current chart does not use it** |
 
 The Python declarations are in [pyproject.toml](pyproject.toml); the chart
@@ -268,10 +272,13 @@ tests, Ruff lint/format and `pip check` passed. Its pinned historical ledger
 passed acceptance and an identical rerun reused the same artifact bytes.
 PQTA-003D-1 has 120 synthetic protocol tests after Architect-review
 hardening; the full local suite passed 286 tests, with Ruff lint/format
-and `pip check` passing. Protocol helpers
-are implemented; models remain unimplemented. No forecasts or predictive
-metrics were produced, Lane A was not executed, Lane B remains blocked,
-and trading/backtesting are not authorized.
+and `pip check` passing. That milestone implemented protocol helpers only.
+PQTA-003D-2 has 117 synthetic baseline tests after Architect-review
+hardening; the full local suite passed 403 tests. Baseline history
+preparation, fitting, and prediction interfaces
+are implemented and exercised on synthetic inputs only. No historical
+forecasts, predictive metrics, or Lane A evaluation were produced; Lane B
+remains blocked and trading/backtesting are not authorized.
 Tests use synthetic data and local fixtures; the HTTP test
 binds a temporary localhost
 port. The prior QNT-002B CI run passed its then-current 84-test suite; it did
@@ -303,7 +310,7 @@ shared adapter. PQTA-003A completed read-only inspection; PQTA-003B has a
 [research dataset and ML architecture design](docs/PQTA-003B_ML_ARCHITECTURE_DESIGN.md).
 Its status remains Complete — Architecture Approved (Design Only). PQTA-003C
 implemented its research-only origin ledger and next-hour target; no approved
-training dataset, fit, forecast, or score has been produced. Later
+training dataset, historical fit, historical forecast, or score has been produced. Later
 integrations remain non-operational:
 
 - **PQTA-002 — Shared Feature Pipeline:** the adapter reuses the existing

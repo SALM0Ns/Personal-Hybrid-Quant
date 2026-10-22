@@ -37,10 +37,15 @@ The application still displays `NO SIGNAL`; its chart reads Silver history.
 PQTA-003D-1 — Synthetic Evaluation Protocol Implemented; Architect Review Pending.
 Pure protocol helpers and synthetic tests now enforce theoretical time,
 completed historical-label admission, sample and history eligibility,
-refit scheduling, and forecast/score state invariants. Models are not
-implemented; no forecasts or predictive metrics were produced and Lane A
-was not executed. Historical publication remains unverified, Lane B is
-blocked, and trading/backtesting are not authorized.
+refit scheduling, and forecast/score state invariants. That milestone did
+not implement models or execute Lane A.
+
+PQTA-003D-2 — Synthetic Statistical Baselines Implemented; Architect Review Pending.
+Zero Return, hourly expanding Mean, and midnight AR(1) now have separate
+in-memory history, fit, and prediction interfaces with synthetic-only
+validation. No historical evaluation, historical forecast, score ledger,
+or predictive metric has been produced. Historical publication remains
+unverified, Lane B is blocked, and trading/backtesting are not authorized.
 
 ## Out of scope
 

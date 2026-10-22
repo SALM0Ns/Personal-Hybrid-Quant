@@ -90,6 +90,18 @@ No models were implemented, forecasts generated, predictive metrics
 calculated, or Lane A evaluation executed. Lane B remains blocked;
 trading/backtesting and dependency installation are not authorized.
 
+## PQTA-003D-2 synthetic baseline implementation record
+
+PQTA-003D-2 — Synthetic Statistical Baselines Implemented; Architect Review Pending.
+The owner authorized synthetic-first Zero Return, expanding Mean, and AR(1)
+components under unchanged `qnt-003d-design-v1` and
+`pqta-003b-origin-ledger-v1`. Existing protocol helpers govern label closure,
+samples, 720-history minima, and midnight AR scheduling. The implementation
+uses standard-library arithmetic and explicit abstention/failure results;
+no dependency or statistical convention was changed. Synthetic testing
+does not authorize historical execution, Lane A evaluation, predictive
+scoring, Lane B, trading, or backtesting. Ridge remains unimplemented.
+
 ## Proposals awaiting approval
 
 | Proposal | Rationale |

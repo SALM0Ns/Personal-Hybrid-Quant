@@ -137,8 +137,9 @@ the approved evaluation splits. Deterministic specification, build, and
 artifact-byte identities protect an immutable local-only output under
 `data/research/pqta-003/`. See `docs/PQTA-003C_DATASET_IMPLEMENTATION.md`.
 The ledger is **not** an approved point-in-time training or backtesting dataset.
-Forecast, score, refit, ML fitting/evaluation, chart integration, Lane A/B
-execution, signals, and trading remain unimplemented or blocked.
+Historical forecast/score/refit orchestration, ML fitting/evaluation,
+chart integration, Lane A/B execution, signals, and trading remain
+unimplemented or blocked.
 
 PQTA-003D-1 — Synthetic Evaluation Protocol Implemented; Architect Review Pending.
 `src/quant/research/evaluation_protocol.py` adds pure validation and eligibility
@@ -160,6 +161,42 @@ flags must be Booleans. It is not a current-origin emission interface.
 `validate_score_state` validates final classifications, with no pending status.
 Both `scored` and `emitted_but_not_scored` require theoretical target closure;
 an abstention may have `not_scored_no_forecast` from its forecast origin.
+
+PQTA-003D-2 — Synthetic Statistical Baselines Implemented; Architect Review Pending.
+`src/quant/research/statistical_baselines.py` supplies pure in-memory Zero
+Return, expanding Mean, and AR(1) components using the existing protocol.
+Mean history preparation admits completed sample-eligible labels only;
+prediction recalculates `math.fsum(values)/n` hourly after the 720-label
+minimum. AR history preparation uses exact previous/current/next open keys,
+not adjacent surviving rows. It admits only completed three-candle pairs
+and applies the separate A-primary/A-sensitivity masks. The fit interface
+requires midnight, 720 pairs, centered `math.fsum` OLS, finite intermediates,
+and `Sxx/n > 1e-16`. Its immutable result records success or failure.
+Current-lag preparation and prediction are separate; prediction accepts only
+the current day's midnight fit, and a failed or skipped refit cannot reuse
+older coefficients. Forecast-side mappings use the existing allowlist.
+
+Source status flags are supplied by the validated-input caller; these APIs
+do not read Silver, Gold, or origin ledgers. Synthetic fits/predictions are
+covered by 117 tests, including numerical failures, sample masks, gaps,
+closure boundaries, and future-row invariance. No historical evaluation,
+forecast/score ledger, predictive metric, Ridge implementation, or new
+dependency is included. Lane B, trading, and backtesting remain blocked.
+
+Construction checks reject malformed manually supplied `ARFit` and
+`CurrentLag` records. A successful fit requires finite parameters, at least
+720 pairs, a scheduled UTC midnight, and a non-null maximum outcome close
+no later than that refit. A failed fit carries an approved reason and no
+parameters. A successful lag requires a finite numeric value; an unavailable
+lag carries a null value and an approved reason. These are structural and
+numeric checks, not cryptographic provenance verification.
+
+Mean history selection retains the approved closure and sample rules:
+`target_valid=false` excludes the label; `target_valid=true` retains the
+sample-eligible label even if its value is missing or nonfinite. After the
+unchanged 720-label minimum is met, finite values produce the mean and any
+eligible missing/nonfinite value produces `nonfinite_prediction`. Such
+labels are never silently discarded to obtain a prediction.
 
 ## Data boundaries
 
