@@ -121,6 +121,16 @@ source, feature, and manifest availability and is currently blocked. Trading
 backtesting remains blocked. No QNT-003 target, model, prediction, or metric
 has been generated. See `docs/QNT-003D_FINAL_RESEARCH_DESIGN.md`.
 
+PQTA-003A completed a read-only inspection of those historical inputs and
+contracts. `docs/PQTA-003B_ML_ARCHITECTURE_DESIGN.md` proposes a separate,
+versioned, **research-only** forecast-origin dataset and linked forecast,
+score, refit, and provenance records. Its status is Complete — Architecture
+Approved (Design Only). Those artifacts and all ML fitting/evaluation modules
+are planned, not implemented. The design preserves the existing Gold values
+and false decision eligibility; it does not connect the offline research path
+to the chart or authorize Lane A
+execution, Lane B, signals, or backtesting.
+
 ## Data boundaries
 
 - Data moves forward through layers; downstream outputs must be reproducible

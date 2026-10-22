@@ -51,6 +51,14 @@ backtesting, signals, models, or automated execution.
 | Research lanes | Lane A contains separately reported valid-target and fixed-manifest retrospective samples; any statistical evaluation requires separate authorization. Lane B verified point-in-time research is blocked pending auditable historical availability and decision eligibility. |
 | Execution boundary | No predictive evaluation has been performed. Trading backtesting remains blocked; this design approval does not authorize targets, model fitting, scoring, signals, or orders. |
 
+## PQTA-003B architecture closure — design only
+
+| Item | Confirmed status or policy |
+| --- | --- |
+| Milestone | Complete — Architecture Approved (Design Only). The Architect approved the research-only forecast-origin ledger, temporal boundaries, separate dataset/build/artifact identities, and proposed offline module boundaries documented in `docs/PQTA-003B_ML_ARCHITECTURE_DESIGN.md`. |
+| Governing protocol | `qnt-003d-design-v1` remains unchanged. The architecture does not amend its target, splits, sample rules, methods, or scoring conventions. |
+| Execution boundary | This approval does not authorize target construction, dataset publication, baseline execution, Ridge training or evaluation, dependency installation, Lane A or Lane B execution, backtesting, inference, signals, or trading. |
+
 ## Proposals awaiting approval
 
 | Proposal | Rationale |
