@@ -36,7 +36,8 @@ Silver data. It is not a live trading system.
 | PQTA-002 | Shared Feature Pipeline | Partial; not operational in the chart | Offline adapter complete; fresh-data sourcing, chart integration, and inference remain future work. |
 | PQTA-003A | ML research and dataset inspection | Complete; read-only | Reviewed the governing protocol and local source/feature metadata; no target or evaluation was produced. |
 | PQTA-003B | Research dataset and ML architecture | Complete — Architecture Approved (Design Only) | Proposed research-only origin, forecast, and score contracts; no implementation or evaluation. |
-| PQTA-003 | ML Training & Evaluation | Planned; not implemented | Requires separate authorization for dataset construction and retrospective evaluation; no model has been trained. |
+| PQTA-003C | Research-only origin dataset | Complete — Architecture Approved (Research Dataset Only) | Pinned Silver/Gold/manifest audit, next-hour target, split and quality masks, and immutable local origin ledger; no forecasts or evaluation. |
+| PQTA-003 | ML Training & Evaluation | Planned; not implemented | The origin ledger is not an approved training dataset; fitting and retrospective evaluation require separate authorization. |
 | PQTA-004 | Signal Decision Engine | Planned; not operational | Future decision policy; the chart currently reports `NO SIGNAL`. |
 | PQTA-005 | Chart Signal Integration | Planned; not operational | Future chart markers; none are displayed today. |
 | PQTA-006 | On-Demand Fresh Analysis | Planned; not operational | Future fresh-data analysis; `Analyze Now` currently refreshes local history only. |
@@ -64,12 +65,15 @@ flowchart LR
     silver --> eda["QNT-002A EDA"] --> goldeda["Gold research artifacts"]
     silver --> features["QNT-002B seven-feature engine"] --> goldfeatures["Gold research-only features"]
     manifest["Versioned candidate anomaly manifest"] --> features
+    silver --> origins["PQTA-003C research-only origin ledger"]
+    goldfeatures --> origins
+    manifest --> origins
     supplied["Supplied in-memory BTC/USDT OHLCV; no fetch"] --> adapter["PQTA-002B shared validation adapter"] --> features
     silver --> preview["Read-only historical preview backend"]
     preview --> http["Loopback HTTP application"] --> chart["TradingView Lightweight Charts frontend"]
   end
   subgraph planned["Planned — not operational"]
-    approveddata["Future approved training dataset; not current Gold"] -.-> training["ML training and evaluation"]
+    approveddata["Future separately approved training dataset; not current Gold or origin ledger"] -.-> training["ML training and evaluation"]
     training -.-> savedmodel["Saved model"]
     ondemand["Future on-demand fresh analysis"] -.-> fresh["Fresh market data"]
     fresh -.-> validation["Fresh-data validation"]
@@ -80,7 +84,7 @@ flowchart LR
     decisions -.-> markers["BUY/SELL chart markers"]
     decisions -.-> paper["Paper trading"]
   end
-  features -.-> approveddata
+  origins -.-> approveddata
   chart -.-> ondemand
 ```
 
@@ -91,6 +95,13 @@ candles; it is not connected to the chart or an exchange. The planned training
 path requires separate dataset eligibility and authorization;
 only its saved model would feed future inference. The current `Analyze Now`
 action rereads Silver and does not retrain or run any model.
+
+PQTA-003C constructs a separate local, research-only origin ledger from the
+pinned Silver, Gold, and candidate manifest. It carries retrospective
+next-hour target and quality audit fields, not a forecast or an approved
+training dataset. Outcome-side fields are excluded from its allowlisted
+forecast-side view. No baseline, Ridge fit, prediction, score, or backtest ran.
+See the [dataset implementation report](docs/PQTA-003C_DATASET_IMPLEMENTATION.md).
 
 The QNT research architecture proposes eventual statistical/ML research,
 signals, risk assessment, a dashboard, and **manual** trading. The local chart
@@ -111,7 +122,7 @@ installation; unpinned package versions can change on a future install.
 | Environment | Anaconda / Conda | 24.11.3 installed | Isolated local development environment | Used for `pqta` |
 | Runtime | Python | 3.12.15 installed; `>=3.12` declared | Backend, research, tests | Implemented; native macOS arm64 |
 | Market ingestion | CCXT | 4.5.89 installed; unpinned declaration | Historical Binance Spot API access | Implemented historical ingestion; **not used by the chart** |
-| Tabular processing | Polars | 2.0.0 installed; unpinned declaration | Bronze/Silver and research transformations | Implemented in QNT workflows |
+| Tabular processing | Polars | 2.0.0 installed; unpinned declaration | Bronze/Silver, feature, and research-ledger transformations | Implemented in QNT and PQTA-003C workflows |
 | Query and preview | DuckDB | 1.5.6 installed and pinned | Parquet queries and read-only chart window | Implemented |
 | Storage format | Parquet | Format; no separate package version | Local Bronze/Silver/Gold files | Implemented |
 | Validation dependency | Pandera | 0.34.1 installed; unpinned declaration | Declared validation library | Installed but not imported by current source |
@@ -138,6 +149,10 @@ run the current chart.
   never writing it or fetching fresh candles.
 - **Gold:** QNT-002A descriptive EDA artifacts and the QNT-002B seven-feature
   BTC/USDT snapshot. Both are local research outputs, not chart inputs.
+- **Research ledger:** PQTA-003C joins the pinned Silver and Gold timelines by
+  exact UTC candle open, preserving all seven features and Gold eligibility.
+  Its local `data/research/pqta-003/` origin ledger includes a next-hour
+  target and audit masks but no forecast, score, fit, or model artifact.
 - **Quality evidence:** coverage reports distinguish verified gaps from
   unknown coverage; the versioned candidate anomaly manifest remains separate
   from Silver and does not repair OHLCV values.
@@ -192,7 +207,7 @@ exist.
 | `src/quant/app/`, `web/` | Read-only Python preview server and browser chart. |
 | `tests/`, `.github/workflows/` | Offline regression tests and CI workflow. |
 | `configs/`, `docs/` | Availability/anomaly configuration and research decisions/reports. |
-| `data/bronze/`, `data/silver/`, `data/gold/` | Ignored local datasets and research artifacts. |
+| `data/bronze/`, `data/silver/`, `data/gold/`, `data/research/` | Ignored local datasets and research artifacts. |
 | `notebooks/`, `scripts/` | Exploratory workspace and bounded research utilities. |
 
 `src/quant/strategies/`, `src/quant/models/`, and
@@ -247,6 +262,9 @@ The PQTA-001 environment verification passed 15 PQTA tests, 84 QNT tests,
 and all 99 tests together. The current PQTA-002B local regression passed 122
 tests, including the new synthetic adapter tests; Ruff lint/format and
 `pip check` passed. PQTA-002B was architecture-approved and pushed to main.
+PQTA-003C added 44 synthetic dataset tests; the full local suite passed 166
+tests, Ruff lint/format and `pip check` passed. Its pinned historical ledger
+passed acceptance and an identical rerun reused the same artifact bytes.
 Tests use synthetic data and local fixtures; the HTTP test
 binds a temporary localhost
 port. The prior QNT-002B CI run passed its then-current 84-test suite; it did
@@ -259,8 +277,10 @@ files were not regenerated by the environment verification.
   displayed candles are not verified point-in-time trading inputs.
 - Known historical gaps and source discrepancies remain documented and
   unresolved; the chart reports gaps rather than filling them.
-- Gold is research-only; historical feature availability and decision
-  eligibility are not established for trading or backtesting.
+- Gold and the PQTA-003C origin ledger are research-only; historical feature
+  availability and decision eligibility are not established for trading or
+  backtesting. The ledger's target and anomaly masks are retrospective audit
+  fields, not a point-in-time-verified training sample.
 - `Analyze Now` refreshes the preview only. No ML predictions, BUY/SELL/HOLD
   recommendations, chart markers, paper trades, brokerage connection, or
   automated order execution are implemented.
@@ -274,7 +294,8 @@ PQTA-001 is the implemented, regression-tested local chart foundation.
 PQTA-002A inspected the architecture and PQTA-002B completed the offline
 shared adapter. PQTA-003A completed read-only inspection; PQTA-003B has a
 [research dataset and ML architecture design](docs/PQTA-003B_ML_ARCHITECTURE_DESIGN.md).
-Its status is Complete — Architecture Approved (Design Only). No target,
+Its status remains Complete — Architecture Approved (Design Only). PQTA-003C
+implemented its research-only origin ledger and next-hour target; no approved
 training dataset, fit, forecast, or score has been produced. Later
 integrations remain non-operational:
 

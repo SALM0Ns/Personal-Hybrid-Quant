@@ -59,6 +59,26 @@ backtesting, signals, models, or automated execution.
 | Governing protocol | `qnt-003d-design-v1` remains unchanged. The architecture does not amend its target, splits, sample rules, methods, or scoring conventions. |
 | Execution boundary | This approval does not authorize target construction, dataset publication, baseline execution, Ridge training or evaluation, dependency installation, Lane A or Lane B execution, backtesting, inference, signals, or trading. |
 
+## PQTA-003C implementation record — research dataset only
+
+The Project Owner separately authorized construction of the
+`pqta-003b-origin-ledger-v1` retrospective origin ledger from the pinned
+BTC/USDT Silver, Gold, and candidate-manifest inputs. The local acceptance
+run and immutable artifacts are documented in
+`docs/PQTA-003C_DATASET_IMPLEMENTATION.md`. This execution authorization
+does not amend `qnt-003d-design-v1`, establish historical point-in-time
+availability, or approve the ledger for model training, Lane A/B evaluation,
+backtesting, inference, signals, or trading. No baseline or model was run.
+
+### PQTA-003C final Architect approval
+
+PQTA-003C research-only dataset implementation is Complete — Architecture
+Approved (Research Dataset Only). The approved dataset contract is
+`pqta-003b-origin-ledger-v1`, governed by `qnt-003d-design-v1`. Historical
+point-in-time availability remains unverified. Lane A evaluation is not
+authorized, and Lane B remains blocked. This approval grants no training,
+forecasting, scoring, backtesting, signals, or trading authorization.
+
 ## Proposals awaiting approval
 
 | Proposal | Rationale |

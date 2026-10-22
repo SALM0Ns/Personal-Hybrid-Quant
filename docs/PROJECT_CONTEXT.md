@@ -27,6 +27,13 @@ Coverage reporting distinguishes explicitly verified instrument availability
 from observed candles and unknown history. A first returned candle alone does
 not establish when an instrument became available.
 
+Later BTC/USDT work added a local historical chart, research-only Gold
+features, and a separate PQTA-003C retrospective forecast-origin audit ledger.
+PQTA-003C is Complete — Architecture Approved (Research Dataset Only).
+The ledger contains a next-hour target for research accounting but no model,
+forecast, score, signal, or verified historical decision-availability claim.
+The application still displays `NO SIGNAL`; its chart reads Silver history.
+
 ## Out of scope
 
 - Trading strategy implementation.

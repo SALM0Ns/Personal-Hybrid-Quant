@@ -118,18 +118,27 @@ Ridge comparator, chronological validation, and forecast/score accounting.
 Its Lane A is retrospective and needs separate authorization before any
 statistical evaluation. Lane B requires verified historical point-in-time
 source, feature, and manifest availability and is currently blocked. Trading
-backtesting remains blocked. No QNT-003 target, model, prediction, or metric
-has been generated. See `docs/QNT-003D_FINAL_RESEARCH_DESIGN.md`.
+backtesting remains blocked. At QNT-003 design closure, no target, model,
+prediction, or metric had been generated. PQTA-003C later created only the
+research target, as described below. See `docs/QNT-003D_FINAL_RESEARCH_DESIGN.md`.
 
 PQTA-003A completed a read-only inspection of those historical inputs and
-contracts. `docs/PQTA-003B_ML_ARCHITECTURE_DESIGN.md` proposes a separate,
-versioned, **research-only** forecast-origin dataset and linked forecast,
-score, refit, and provenance records. Its status is Complete — Architecture
-Approved (Design Only). Those artifacts and all ML fitting/evaluation modules
-are planned, not implemented. The design preserves the existing Gold values
-and false decision eligibility; it does not connect the offline research path
-to the chart or authorize Lane A
-execution, Lane B, signals, or backtesting.
+contracts. `docs/PQTA-003B_ML_ARCHITECTURE_DESIGN.md` designed a separate,
+versioned, **research-only** forecast-origin dataset and linked future
+forecast, score, and refit records. Its status remains Complete — Architecture
+Approved (Design Only). PQTA-003C is Complete — Architecture Approved
+(Research Dataset Only). It implemented the origin ledger alone in
+`src/quant/research/forecast_dataset.py`. It verifies exact pinned
+Silver, Gold, and canonical-manifest digests; preserves all seven Gold features,
+nulls, anomaly metadata, and false decision eligibility; joins Silver by exact
+UTC candle open; and constructs the retrospective next-hour target and separate
+feature/target/AR-lag quality masks. The last 13:00 UTC audit origin is outside
+the approved evaluation splits. Deterministic specification, build, and
+artifact-byte identities protect an immutable local-only output under
+`data/research/pqta-003/`. See `docs/PQTA-003C_DATASET_IMPLEMENTATION.md`.
+The ledger is **not** an approved point-in-time training or backtesting dataset.
+Forecast, score, refit, ML fitting/evaluation, chart integration, Lane A/B
+execution, signals, and trading remain unimplemented or blocked.
 
 ## Data boundaries
 
