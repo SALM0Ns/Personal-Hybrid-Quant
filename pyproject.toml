@@ -12,7 +12,7 @@ license = { text = "Proprietary" }
 authors = [{ name = "Project Owner" }]
 dependencies = [
   "ccxt",
-  "duckdb",
+  "duckdb==1.5.6",
   "pandera",
   "polars",
   "pytz",

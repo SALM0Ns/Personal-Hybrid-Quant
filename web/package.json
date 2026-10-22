@@ -1,0 +1,9 @@
+{
+  "name": "pqta-historical-preview",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Local read-only BTC/USDT chart frontend",
+  "dependencies": {
+    "lightweight-charts": "5.2.1"
+  }
+}

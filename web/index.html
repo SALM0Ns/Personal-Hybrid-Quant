@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BTC/USDT 1H · Historical Preview</title>
+    <link rel="stylesheet" href="/style.css">
+    <script defer src="/vendor/lightweight-charts.js"></script>
+    <script defer src="/app.js"></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">PERSONAL QUANT TRADING ASSISTANT · PQTA-001</div>
+          <h1>BTC/USDT <span>1H</span></h1>
+          <p class="subtitle">Local Binance Spot Silver snapshot · candle opens in UTC</p>
+        </div>
+        <div class="actions">
+          <span class="preview-badge">HISTORICAL PREVIEW — NOT LIVE</span>
+          <button type="button" id="analyze-button">Analyze Now</button>
+        </div>
+      </header>
+
+      <section class="status-grid" aria-label="Preview status">
+        <div class="status-card">
+          <span class="label">DATA SOURCE</span>
+          <strong id="data-source">Local Silver · loading</strong>
+        </div>
+        <div class="status-card">
+          <span class="label">LATEST DISPLAYED CANDLE</span>
+          <strong id="latest-candle">—</strong>
+        </div>
+        <div class="status-card">
+          <span class="label">DATA QUALITY</span>
+          <strong id="quality-status">Checking…</strong>
+        </div>
+        <div class="status-card signal-card">
+          <span class="label">SIGNAL STATUS</span>
+          <strong id="signal-status">NO SIGNAL</strong>
+        </div>
+      </section>
+
+      <section class="chart-panel" aria-labelledby="chart-title">
+        <div class="panel-heading">
+          <div>
+            <h2 id="chart-title">Historical candlesticks</h2>
+            <p>Read-only preview; no prediction, recommendation, or order action.</p>
+          </div>
+          <span id="candle-count">— candles</span>
+        </div>
+        <div id="chart" role="img" aria-label="Interactive BTC/USDT 1-hour candlestick chart"></div>
+        <p id="load-status" class="load-status" role="status" aria-live="polite">Loading historical preview…</p>
+      </section>
+
+      <footer>
+        Historical candle closure is not proof of publication availability. This preview is not a validated point-in-time trading input.
+        TradingView Lightweight Charts™ · Copyright (с) 2025 TradingView, Inc.
+        <a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer">TradingView</a>
+      </footer>
+    </main>
+  </body>
+</html>
