@@ -80,6 +80,30 @@ snapshot is for descriptive research, not trading signals or historical
 backtesting. Its real-data findings are in
 `docs/QNT-002B_REAL_DATA_AUDIT.md`.
 
+PQTA-002B adds a non-network, in-memory adapter around the **same** QNT-002B
+feature engine. It accepts only ordered, unique, closed, UTC-aligned BTC/USDT
+1h observations with explicit local `ingested_at`, analysis boundary, expected
+latest candle, and versioned anomaly manifest. It rejects invalid, future,
+out-of-order, duplicate, or stale inputs rather than sorting or repairing
+them; `expected_latest_candle` must equal the latest full hour closed at
+`analysis_as_of`, and source or quality evidence cannot postdate that boundary.
+The output is the engine's existing typed Gold schema in memory; no
+Parquet is created. The exact seven formulas, gap rows, null reasons, and
+24/168-hour contiguous warm-up are unchanged.
+
+Adapter provenance is distinct from historical Silver-file provenance. For
+adapter output, `source_snapshot_sha256` means SHA-256 of canonical UTF-8 JSON
+(`pqta-canonical-ohlcv-v1`) containing the fixed market identity, fixed field
+order, ascending source rows, six-digit UTC `Z` timestamps, and big-endian
+IEEE-754 Float64 hex values; compact sorted-key JSON ends with a newline.
+The adapter's feature-version suffix identifies that hash type. Historical
+QNT-002B output continues to hash exact Silver Parquet bytes. The manifest
+version and canonical digest remain separate. An empty anomaly list is not
+quality proof; unknown quality availability leaves `available_at=null` and
+`decision_eligible=false`. A local observation time is not exchange
+publication time. The adapter is not connected to the chart, any fresh-data
+fetcher, model, signal engine, or order route.
+
 `.github/workflows/python-tests.yml` runs the complete offline pytest suite
 and Ruff lint/format checks on a clean GitHub Actions runner. Run
 `39575760185` passed 84 tests and both Ruff checks for QNT-002B commit

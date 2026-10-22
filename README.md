@@ -29,9 +29,11 @@ Silver data. It is not a live trading system.
 | QNT-002A | Gap-aware EDA | Complete | Descriptive BTC/USDT research artifacts in local Gold. |
 | QNT-002B | Feature engineering | Complete; research-only | Seven-feature engine, candidate anomaly manifest, and audited local Gold snapshot. |
 | QNT-003A–D | Statistical research design | Complete; no evaluation run | Protocol `qnt-003d-design-v1` defines, but has not executed, baseline/Ridge comparisons. |
-| PQTA-001 | Local candlestick preview | Implemented and regression-tested; final review pending | Read-only chart with `Analyze Now` refresh and constant `NO SIGNAL`. |
+| PQTA-001 | Local candlestick preview | Complete and regression-tested | Read-only chart with `Analyze Now` refresh and constant `NO SIGNAL`. |
 | PQTA-001A/B/C | Environment diagnosis and recovery | Completed; Architect review pending | Dedicated arm64 Python 3.12 Conda environment; full 99-test regression passed. |
-| PQTA-002 | Shared Feature Pipeline | Planned; not operational | Define the future shared historical/fresh feature path; the current engine remains offline. |
+| PQTA-002A | Shared feature inspection | Complete; design only | Identified the QNT-002B engine as the single formula source and approved adapter boundaries. |
+| PQTA-002B | Shared feature adapter | Implemented; review pending | Validates supplied in-memory BTC/USDT candles and reuses the offline engine; no fresh-data fetch or application integration. |
+| PQTA-002 | Shared Feature Pipeline | Partial; not operational in the chart | Adapter exists, but fresh-data integration and inference remain future work. |
 | PQTA-003 | ML Training & Evaluation | Planned; not operational | Use a separately approved training dataset; no model has been trained. |
 | PQTA-004 | Signal Decision Engine | Planned; not operational | Future decision policy; the chart currently reports `NO SIGNAL`. |
 | PQTA-005 | Chart Signal Integration | Planned; not operational | Future chart markers; none are displayed today. |
@@ -60,6 +62,7 @@ flowchart LR
     silver --> eda["QNT-002A EDA"] --> goldeda["Gold research artifacts"]
     silver --> features["QNT-002B seven-feature engine"] --> goldfeatures["Gold research-only features"]
     manifest["Versioned candidate anomaly manifest"] --> features
+    supplied["Supplied in-memory BTC/USDT OHLCV; no fetch"] --> adapter["PQTA-002B shared validation adapter"] --> features
     silver --> preview["Read-only historical preview backend"]
     preview --> http["Loopback HTTP application"] --> chart["TradingView Lightweight Charts frontend"]
   end
@@ -81,7 +84,9 @@ flowchart LR
 
 The implemented Silver-to-feature-engine path is historical and offline. Its
 current Gold snapshot is **not** the future approved training dataset. The
-planned training path requires separate dataset eligibility and authorization;
+new adapter calls that same engine on explicitly supplied, validated in-memory
+candles; it is not connected to the chart or an exchange. The planned training
+path requires separate dataset eligibility and authorization;
 only its saved model would feed future inference. The current `Analyze Now`
 action rereads Silver and does not retrain or run any model.
 
@@ -134,6 +139,27 @@ run the current chart.
 - **Quality evidence:** coverage reports distinguish verified gaps from
   unknown coverage; the versioned candidate anomaly manifest remains separate
   from Silver and does not repair OHLCV values.
+
+The shared adapter accepts strictly ordered BTC/USDT 1h candle opens, local
+observation times, and finite OHLCV, plus explicit analysis and expected-latest
+boundaries and a versioned anomaly manifest. It rejects duplicates, out-of-order
+or incomplete candles, invalid values, and a stale latest candle. It returns
+the existing typed seven-feature Gold schema **in memory**, with explicit
+internal missing hours, null reasons, and 24/168-hour warm-up after gaps. It
+does not write a dataset. Its `source_snapshot_sha256` hashes canonical
+in-memory observation bytes, **not** Silver Parquet bytes; adapter rows identify
+this provenance with `feature_version=qnt-002b-v1+pqta-canonical-ohlcv-v1`.
+The canonical UTF-8 JSON includes schema ID, fixed market identity, ordered
+field names, and ascending rows; UTC times use six fractional digits and `Z`,
+while numeric values use exact big-endian IEEE-754 Float64 hex bytes. JSON
+keys are sorted, separators compact, and a final newline is included.
+An empty anomaly list never proves complete quality; without verified manifest
+availability, feature values can be inspected but `available_at` stays null
+and `decision_eligible` is false. The adapter also rejects observation or
+quality evidence later than `analysis_as_of`; the expected latest candle must
+be the latest full hour closed at that boundary. Candle closure alone is not
+publication evidence. Future fresh-data evidence and inference require
+separate approval.
 
 Historical Gold has unknown publication availability (`available_at=null`),
 unresolved anomaly evidence, and zero `decision_eligible` rows. It does **not**
@@ -215,9 +241,11 @@ ruff format --check .
 python -m pip check
 ```
 
-The latest local environment verification passed 15 PQTA tests, 84 QNT tests,
-and all 99 tests together; Ruff lint/format and `pip check` passed. Tests use
-synthetic data and local fixtures; the HTTP test binds a temporary localhost
+The PQTA-001 environment verification passed 15 PQTA tests, 84 QNT tests,
+and all 99 tests together. The current PQTA-002B local regression passed 122
+tests, including the new synthetic adapter tests; Ruff lint/format and
+`pip check` passed. Tests use synthetic data and local fixtures; the HTTP test
+binds a temporary localhost
 port. The prior QNT-002B CI run passed its then-current 84-test suite; it did
 not validate the later PQTA application. Existing Bronze, Silver, and Gold
 files were not regenerated by the environment verification.
@@ -239,11 +267,12 @@ files were not regenerated by the environment verification.
 
 ## Development Roadmap
 
-PQTA-001 is the implemented, regression-tested local chart foundation. Later
-tasks remain unapproved and non-operational:
+PQTA-001 is the implemented, regression-tested local chart foundation.
+PQTA-002A inspected the architecture and PQTA-002B implemented the offline
+shared adapter, pending review. Later integrations remain non-operational:
 
-- **PQTA-002 — Shared Feature Pipeline:** future common feature handling for
-  historical development and validated fresh data.
+- **PQTA-002 — Shared Feature Pipeline:** the adapter reuses the existing
+  engine; fresh-data sourcing and chart/inference integration are not built.
 - **PQTA-003 — ML Training & Evaluation:** future training on an approved
   dataset, with a saved model for separately authorized inference.
 - **PQTA-004 — Signal Decision Engine:** future policy for model outputs.
