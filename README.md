@@ -48,6 +48,8 @@ Silver data. It is not a live trading system.
 | PQTA-003D-4A | Synthetic evaluation accounting and reporting | Complete — Architect Approved (Synthetic Only) | Pure in-memory accounting, metrics, scored-set intersections and evidence-linked schema validation; synthetic fixtures only. |
 | PQTA-003D-4B | Synthetic chronological evaluation coordinator | Implemented; Architect review pending | Connects supplied synthetic features/closed targets, existing models and 4A reporting; no historical reader or artifact publication. |
 | PQTA-003D-5A | Read-only historical adapter and readiness audit | Implemented; Architect review pending | Verifies pinned source/artifact identities and preserves lossless historical features, targets and anomaly associations in memory; no execution bridge or historical fitting. |
+| PQTA-003D-5B | Historical projection policy | Approved Design — Not Implemented | Policy `pqta-003d-5b-projection-v1`: target-endpoint-only Quality and strict fail-closed handling; policy approval alone grants no execution authorization. |
+| PQTA-003D-5C | Historical projection compatibility layer | Implemented; Architect review pending | Source-bound, lossless in-memory compatibility plans and audit; unsupported required fields block the requested scope. No historical evaluation bridge. |
 | PQTA-003 | ML Training & Evaluation | Synthetic comparator components implemented; historical evaluation pending | The origin ledger is not an approved point-in-time training dataset; historical execution requires separate authorization. |
 | PQTA-004 | Signal Decision Engine | Planned; not operational | Future decision policy; the chart currently reports `NO SIGNAL`. |
 | PQTA-005 | Chart Signal Integration | Planned; not operational | Future chart markers; none are displayed today. |
@@ -69,6 +71,12 @@ The [publication index](docs/evaluations/README.md) contains no results.
 The [PQTA-003D-5A adapter contract](docs/PQTA-003D-5A_HISTORICAL_ADAPTER.md)
 documents the separate read-only historical representation and readiness
 audit. It does not relabel history as synthetic inputs or authorize evaluation.
+The [approved 5B policy](docs/PQTA-003D-5B_HISTORICAL_PROJECTION_POLICY.md)
+now has a separate 5C compatibility implementation in
+`src/quant/research/historical_projection.py`. It authenticates pinned source
+bindings separately from synthetic fixtures, retains lossless audit evidence,
+and checks strict 4A representability without connecting history to a model,
+runner or reporting engine. Implementation does not imply execution approval.
 Approved reporting boundaries are: training-history accounting only;
 Ridge validation candidate tuning diagnostics only; test comparisons use
 a frozen alpha. Research metrics are not trading confidence.
@@ -96,6 +104,7 @@ flowchart LR
     goldfeatures --> historicalaudit
     manifest --> historicalaudit
     origins --> historicalaudit
+    historicalaudit --> projection["PQTA-003D-5C in-memory projection compatibility; no execution bridge"]
     baselines["PQTA-003D-2 synthetic baseline components; no historical execution"]
     ridge["PQTA-003D-3 synthetic Ridge comparator; no historical execution"]
     accounting["PQTA-003D-4A synthetic accounting/reporting; no historical execution"]
@@ -172,6 +181,7 @@ installation; unpinned package versions can change on a future install.
 | Future modeling | LightGBM / XGBoost proposals | Not declared or installed in `pqta` | Possible later predictive research | **Planned only; no model execution** |
 | Statistical baselines | Python standard library, `math.fsum` | Existing Python runtime; no added package | Zero Return, Mean, and AR(1) | Implemented and tested on synthetic inputs only |
 | Synthetic coordination | Python standard library | Python 3.12.15; no new dependency | Closure/admission events, existing model calls, daily state, accounting and report validation | PQTA-003D-4B implemented; synthetic-only, Architect review pending |
+| Historical compatibility | Python standard library and existing Polars | Existing declared runtime/dependencies; no added package | Authenticated source binding, closure-gated projection plans and canonical in-memory compatibility audit | PQTA-003D-5C implemented; Architect review pending, no execution bridge |
 | Future interface proposal | Streamlit | Not declared or installed in `pqta` | Earlier dashboard proposal | **Planned only; current chart does not use it** |
 
 The Python declarations are in [pyproject.toml](pyproject.toml); the chart
@@ -199,6 +209,13 @@ run the current chart.
   `candle` and `unknown` fields remain verbatim; the association helper keeps
   unsupported associations `unresolved`, while the reader rejects schema drift.
   This is not the synthetic 4A `Outcome` contract.
+- **Historical compatibility:** PQTA-003D-5C retains the lossless audit
+  envelope while deriving target-endpoint-only 4A Quality for supported,
+  closed rows. Feature-window records remain separate; `feature_complete`
+  and `ar_lag_valid` remain explicit. Unsupported `candle`/`unknown` fields,
+  unresolved associations and unknown anomaly types fail closed. A blocked
+  required row blocks the declared scope, not a conveniently reduced universe.
+  All readiness, PIT and decision-eligibility flags remain false.
 - **Quality evidence:** coverage reports distinguish verified gaps from
   unknown coverage; the versioned candidate anomaly manifest remains separate
   from Silver and does not repair OHLCV values.
@@ -359,6 +376,17 @@ PQTA-003D-5A adds 62 synthetic read-only adapter tests. The full local suite
 passed **759 tests** in 12.65 seconds; Ruff lint/format, `pip check`, and Git
 whitespace checks passed. These checks do not execute historical models or
 establish trading readiness. Historical audit reports remain in memory only.
+PQTA-003D-5C compatibility tests are synthetic and can be run with `pqta`
+active using `python -m pytest -q tests/test_historical_projection.py`.
+They exercise source binding, strict projection, temporal isolation and
+deterministic serialization without historical fitting or evaluation.
+The 5C acceptance run passed **57 projection tests**, **387 relevant research
+regression tests**, and **816 full-suite tests** in the `pqta` environment.
+The full-suite rerun required localhost permission for the existing HTTP test;
+the sandboxed attempt had 815 passes and one socket-permission failure.
+The read-only compatibility audit retained 50,845 origins: 49,692 compatible,
+1,152 blocked and one audit-only. These are representation counts, not model
+results or permission to execute a reduced historical evaluation.
 Tests use synthetic data and local fixtures; the HTTP test
 binds a temporary localhost
 port. The prior QNT-002B CI run passed its then-current 84-test suite; it did
@@ -384,12 +412,20 @@ files were not regenerated by the environment verification.
 - PQTA-003D-4B accepts only explicitly marked in-memory synthetic fixtures.
   Synthetic feature availability, target validity and feature provenance
   are caller-attested. `feature_open_t` alignment does not independently
-  prove causal feature construction. Historical source authentication
-  remains unimplemented. Nominal closure is not publication time.
+  prove causal feature construction. The synthetic runner does not
+  authenticate historical sources; separate 5A/5C read-only verification
+  does not provide a historical execution bridge. Nominal closure is not
+  publication time.
   Synthetic fits and metrics establish neither BTC predictability nor
   trading profitability and are not live-trading evidence; historical
   execution remains unauthorized. Frozen-alpha Ridge replay occurs only
   in Test, never training-history accounting or validation diagnostics.
+- PQTA-003D-5C implements compatibility only under
+  `pqta-003d-5b-projection-v1`. Unsupported required metadata blocks the whole
+  requested projection scope; blocks are not model abstentions. Source-byte
+  verification does not verify anomaly evidence or historical publication.
+  Historical execution/reporting remain unauthorized, PIT unverified and
+  decision eligibility false; no generated compatibility files are written.
 
 ## Development Roadmap
 

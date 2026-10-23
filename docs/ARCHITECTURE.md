@@ -395,14 +395,57 @@ archive/REST evidence or determine anomaly causes.
 
 No adapter output is passed to `run_synthetic`, 4A forecast/score construction,
 or a model. Those contracts and model mathematics remain unchanged. A
-future historical execution bridge needs separately reviewed projection
-semantics, including fields outside 4A's OHLCV vocabulary and the scope of
-quality associations. `ready_for_architect_review` means only the read-only
-audit is ready for review; `execution_ready=false` remains explicit.
-Required projection policy and execution authorization remain blockers.
+future historical execution bridge must preserve the approved 5B projection
+semantics, including strict blocking of fields outside 4A's OHLCV vocabulary
+and the endpoint-only quality scope. `ready_for_architect_review` means only
+the read-only audit is ready for review; `execution_ready=false` remains explicit.
+The approved policy and 5C compatibility layer below do not provide or
+authorize that execution bridge.
 Historical PIT remains unverified, Lane B and backtesting remain blocked,
 and no fit, forecast, score, metric, output file or dashboard route is
 produced by this adapter.
+
+## PQTA-003D-5C historical projection compatibility — no execution bridge
+
+`src/quant/research/historical_projection.py` is implemented; Architect review
+is pending. It applies approved policy `pqta-003d-5b-projection-v1` in a
+separate read-only layer around the lossless 5A representation. The
+[5B design](PQTA-003D-5B_HISTORICAL_PROJECTION_POLICY.md) remains the policy
+authority, not a historical execution or reporting interface.
+
+The public boundaries separate `verify_pinned_source(root)` from
+`bind_synthetic(adapter)`. The former uses the existing pinned-history
+verification path and binds exact source identities/bytes to an authenticated
+receipt; the latter labels in-memory fixtures synthetic, never authenticated
+history. Neither caller-supplied verification flags nor valid SHA-256 syntax
+can establish authenticated bytes. Byte authentication remains separate from
+unverified anomaly-evidence completeness and publication availability.
+
+`plan_forecast_fields` exposes only current feature/time fields and an opaque
+source reference, without an outcome attachment or resolver.
+`plan_completed_history` checks `h+1h <= forecast_origin` before target/flag
+access, preserving exact hourly adjacency and the approved retrospective
+A-sensitivity training/current-input masks. `project_closed_outcome` produces
+a supported closed-outcome projection with its mandatory lossless audit
+attachment; feature-window evidence remains separate from target-endpoint-only
+4A Quality. Explicit `feature_complete` and `ar_lag_valid` are retained, not
+silently inferred from constructor defaults.
+
+`audit_compatibility` returns deterministic canonical report bytes and a
+payload digest in memory. It retains every requested origin and distinguishes
+`compatible`, `blocked`, `failed`, `audit_only` and `not_closed` projection
+classifications from existing forecast/score/abstention vocabularies. The final
+out-of-split row remains audit-only. Raw `candle` and `unknown` fields are never
+translated, removed or disguised as model abstentions. Unsupported required
+records, unknown anomaly types or unresolved associations block the requested
+scope; no reduced-universe metrics are permitted.
+
+All outputs retain `execution_ready=false`, `point_in_time_verified=false`
+and `decision_eligible=false`. There is no model call, historical runner,
+synthetic guard bypass, historical reporting, artifact writer or dashboard
+integration. Historical execution needs separate authorization; reporting is
+deferred pending its own reviewed interface. Run the synthetic compatibility
+tests in `pqta` with `python -m pytest -q tests/test_historical_projection.py`.
 
 ## Data boundaries
 

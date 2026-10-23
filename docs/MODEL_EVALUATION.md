@@ -37,6 +37,7 @@ require review rather than a silent implementation choice.
 | `forecast_accounting.py`, `evaluation_reporting.py` | Implemented pure synthetic accounting, metrics, comparisons and strict evidence-linked report validation; no historical results exist. |
 | `model_evaluation.py` | PQTA-003D-4B synthetic-only chronological coordinator implemented; Architect review pending. No historical reader or publisher. |
 | `historical_adapter.py` | PQTA-003D-5A read-only pinned-source and lossless historical audit implemented; Architect review pending. No projection into 4A or execution bridge. |
+| `historical_projection.py` | PQTA-003D-5C strict read-only compatibility layer implemented; Architect review pending. Source-bound in-memory plans/audit only, not a historical runner or reporting bridge. |
 | Historical orchestration and published forecast/score/refit ledgers | Designed, unimplemented. |
 | Application | Read-only historical Silver chart, `NO SIGNAL`; no model evaluation view. |
 
@@ -65,8 +66,9 @@ A future historical coordinator would verify input byte digests,
 dataset/build identities, schema, UTC keys, versions and split assignments
 before use. It would consume the existing ledger and pinned validated
 Silver, never exchange APIs. That reader is not implemented by 4B. The
-separate 5A adapter described in §16 performs source/readiness inspection
-only; it does not connect history to this execution flow.
+separate 5A adapter described in §16 performs source/readiness inspection;
+5C (§17) checks strict projection compatibility. Neither connects history to
+this execution flow.
 AR's exact source-close observations must come from pinned Silver, not a
 new return definition or row-shift approximation. Source validity and
 anomaly flags must be mapped explicitly into the existing model APIs.
@@ -845,9 +847,9 @@ The audit reports observed anomaly categories, target-endpoint and
 feature-window associations, unresolved associations, evidence completeness
 and fields requiring additional projection policy. A successful read-only
 inspection may be `ready_for_architect_review`; it cannot establish full
-execution readiness. `execution_ready=false` remains explicit because the
-historical-to-4A projection policy and separate execution authorization are
-still required. Any unresolved association affecting that projection remains
+execution readiness. `execution_ready=false` remains explicit. The approved
+5B policy and 5C compatibility implementation below do not authorize historical
+execution. Any unresolved association affecting that projection remains
 a visible limitation or blocker rather than a presumed quality claim.
 
 Pinned source-byte authentication establishes that the inspected inputs
@@ -858,10 +860,123 @@ references and their evidence limitations are preserved. The 4A reporting
 milestone still has `artifact_bytes_verified=false`; the new adapter's
 separate source audit does not change that contract or certify a report.
 
-The historical adapter is deliberately not an execution bridge. A separately
-reviewed policy must define how target-endpoint, feature-window and unresolved
-records project into 4A `Quality`/`Outcome` without losing evidence, including
-non-OHLCV field tokens and their eligibility implications. Then historical
-execution requires explicit owner authorization. Lane A evaluation remains
+The historical adapter is deliberately not an execution bridge. The approved
+[5B policy](PQTA-003D-5B_HISTORICAL_PROJECTION_POLICY.md) and compatibility
+implementation below preserve the separate anomaly scopes and strictly block
+unsupported fields rather than losing evidence. Historical execution still
+requires explicit owner authorization. Lane A evaluation remains
 unauthorized; Lane B, trading and backtesting remain blocked. No publisher,
 dashboard integration, signal or order functionality is introduced.
+
+## 17. PQTA-003D-5C historical projection compatibility
+
+**Status: Implemented; Architect review pending.**
+`historical_projection.py` applies policy `pqta-003d-5b-projection-v1` to the
+existing historical adapter. The scope is read-only compatibility planning
+and auditing, not historical evaluation, forecasting, scoring or reporting.
+The 4A contracts, synthetic runner guards, model mathematics and governing
+`qnt-003d-design-v1` protocol remain unchanged.
+
+### Source and evidence boundaries
+
+`verify_pinned_source(root)` uses the approved pinned-history verification
+mechanism, then binds source records and immutable source identities to a
+verified receipt. `bind_synthetic(adapter)` is the separate in-memory fixture
+boundary: it cannot establish authenticated historical bytes. A caller Boolean
+or syntactically valid digest is not proof. Source authentication checks the
+approved bytes, not the completeness of referenced anomaly evidence, its root
+causes or historical publication time. These remain distinct metadata states;
+no synthetic fixture or unverified anomaly evidence is upgraded to verified.
+
+### Projection views and fail-closed scope
+
+- `plan_forecast_fields` returns only allowlisted feature/time information
+  and an opaque identity reference without outcome access or a resolver.
+- `plan_completed_history` gates target and target-flag access on exact
+  theoretical closure, `h+1h <= forecast_origin`, then preserves the approved
+  method/sample masks. A-sensitivity remains a retrospective training and
+  current-input exception, not merely a scoring-only filter.
+- `project_closed_outcome` keeps its full lossless audit attachment and
+  derives supported target-endpoint-only 4A Quality; it retains original
+  reasons with explicit priority normalization. Feature-window records and
+  explicit `feature_complete`/`ar_lag_valid` remain separate. Before closure
+  only clock/identity information is exposed, never future target metadata.
+- `audit_compatibility` retains the requested scope and produces canonical
+  report bytes/digest in memory, with no generated files or model calls.
+
+Projection classifications are `compatible`, `blocked`, `failed`, `audit_only`
+and `not_closed`, not new forecast/score statuses or abstention reasons.
+Unsupported `candle`/`unknown` tokens are preserved verbatim. Unknown anomaly
+types, unresolved associations and inconsistent source metadata fail closed.
+Unsupported required rows block the entire requested scope: no origin is
+silently dropped, no incomplete outcome is fabricated and no reduced-universe
+performance metric is calculated. Out-of-split origins remain audit-only;
+missing hours never compress adjacency or become fabricated candles.
+
+Canonical compatibility reporting retains policy/source/receipt identity,
+scope, all classification counts, blocking reasons, unsupported categories
+and source-integrity state. It is deterministic for pinned inputs and fixed
+configuration, with a separate payload digest. It is not a
+`pqta-model-evaluation-v1` historical result. All three readiness values stay
+false: `execution_ready`, `point_in_time_verified`, `decision_eligible`.
+
+The immutable source receipt binds the factory-issued source object, exact
+source key/index/origin and canonical record bytes. Copied/manual receipts or
+caller verification flags do not mint that binding. This is an in-process
+integrity boundary, not a cryptographic signature or hostile-Python sandbox.
+The receipt authenticates the snapshot read, not future filesystem contents.
+Source and policy identities remain separate from the projection build
+identity, which pins code content, dependencies and serializer configuration.
+`payload_sha256` hashes the canonical report without its own digest field;
+the returned `canonical_report` includes that field. Raw arrays preserve
+order/multiplicity, nulls and signed zero; datetimes use microsecond UTC `Z`
+encoding. Canonical object keys are sorted and the UTF-8 JSON ends with LF.
+
+### Read-only compatibility acceptance
+
+At the fixed source analysis boundary `2026-10-20T13:00:00Z`, the authenticated
+pinned source produced the following **representational compatibility** counts,
+not forecasts, scores, predictive metrics or evaluation results:
+
+| Classification | Origins |
+| --- | ---: |
+| Total audited origins | 50,845 |
+| Compatible | 49,692 |
+| Blocked | 1,152 |
+| Failed | 0 |
+| Audit-only (final origin outside the approved test interval) | 1 |
+| Not closed | 0 |
+
+Unsupported-field counts are **per affected origin and overlap**:
+`candle=1,149`, `unknown=680`, with 677 origins containing both. All original
+rows remain retained. The full requested scope is not projectable; compatible
+rows must not be repackaged as a reduced executable evaluation universe.
+All readiness flags remain false, including for representationally compatible
+rows. The source origin-build identity remains
+`693697c2dc1ea82297959c39b2b6ec8da472f8bc74070e4cd4043d106246cc96`.
+The in-memory compatibility payload digest was
+`558e3132c3f160aaa21d898d8673ffc2c60a2623bf151b9cd3ab89f370dc9427`;
+no generated report file was written or published.
+
+### Testing and remaining authority
+
+With `pqta` active, run
+`python -m pytest -q tests/test_historical_projection.py`. Synthetic tests
+exercise representable and blocked cases, lossless evidence, source binding,
+closure/isolation, sample masks and canonical determinism. Read-only pinned
+compatibility auditing is not historical model execution or predictive
+evidence. Historical execution requires separate authorization; historical
+reporting remains deferred under ADR-5B-04 and needs a reviewed interface.
+Lane B, backtesting, signals, dashboard integration and trading remain blocked
+or unimplemented. No result is relabeled synthetic to bypass existing guards.
+
+Acceptance validation passed 57 new projection tests, 387 relevant existing
+research tests and the full 816-test suite (14.90 seconds on rerun). The first
+full-suite attempt passed 815 tests and failed only the existing localhost
+HTTP test because the sandbox prohibited socket binding; no test expectation
+was changed. Ruff lint/format, `pip check`, documentation links/structure and
+Git whitespace checks passed. The 25 protected dataset hashes, four immutable
+origin-artifact hashes and canonical manifest digest remained unchanged, as
+did the three pre-existing QNT-003 header edits. No dependency, existing
+research contract, model implementation, synthetic runner or reporting-engine
+change was needed.
