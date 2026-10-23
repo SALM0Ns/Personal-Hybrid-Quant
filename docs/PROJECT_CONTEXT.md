@@ -47,6 +47,17 @@ validation. No historical evaluation, historical forecast, score ledger,
 or predictive metric has been produced. Historical publication remains
 unverified, Lane B is blocked, and trading/backtesting are not authorized.
 
+PQTA-003D-3 — Synthetic Ridge Implemented; Architect Review Pending.
+The seven-feature comparator, training-only scaler, daily refit contract,
+and fixed-2024 alpha-selection components are implemented with Python's
+standard library and tested on synthetic inputs only. No historical
+evaluation has been run. The product goal is a practical personal 1H
+crypto BUY/SELL/HOLD assistant for small-capital decision support; the
+research contracts remain safeguards against leakage and overstated data
+availability. Current application behavior remains `NO SIGNAL` and
+execution remains manual. Signals, trading, and backtesting are not
+authorized by this milestone.
+
 ## Out of scope
 
 - Trading strategy implementation.

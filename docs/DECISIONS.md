@@ -102,6 +102,20 @@ no dependency or statistical convention was changed. Synthetic testing
 does not authorize historical execution, Lane A evaluation, predictive
 scoring, Lane B, trading, or backtesting. Ridge remains unimplemented.
 
+## PQTA-003D-3 synthetic Ridge implementation record
+
+PQTA-003D-3 — Synthetic Ridge Implemented; Architect Review Pending.
+The owner authorized a dependency-free seven-feature Ridge implementation
+and synthetic validation under unchanged `qnt-003d-design-v1` and
+`pqta-003b-origin-ledger-v1`. This selects the standard-library augmented
+Householder QR implementation for this milestone; earlier numerical-library
+proposals do not authorize installation. The summed-square objective,
+unpenalized intercept, population scaling, fixed alpha grid/folds, sample
+rules, 720-row threshold, and daily schedule are preserved. Synthetic
+alpha-selection tests do not authorize historical evaluation, signals,
+trading, or backtesting. The product goal remains personal 1H crypto
+decision support with manual execution; no performance claim is recorded.
+
 ## Proposals awaiting approval
 
 | Proposal | Rationale |

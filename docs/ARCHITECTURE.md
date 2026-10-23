@@ -198,6 +198,82 @@ unchanged 720-label minimum is met, finite values produce the mean and any
 eligible missing/nonfinite value produces `nonfinite_prediction`. Such
 labels are never silently discarded to obtain a prediction.
 
+## PQTA-003D-3 synthetic Ridge comparator
+
+`src/quant/research/ridge_regression.py` is Synthetic Ridge Implemented;
+Architect Review Pending. The practical product goal is a personal 1H crypto
+BUY/SELL/HOLD assistant for small-capital decision support. These components
+remain isolated from the historical chart and protect that future product
+through the unchanged research contracts; synthetic tests establish no
+historical performance, profitability, or live-trading readiness.
+
+The pure in-memory APIs separate `prepare_history`, `fit_scaler`,
+`standardize`, `fit_ridge`, `select_alpha`, and `predict`. `ResearchRow`
+uses the seven-feature contract order and historical label origin, not
+candle open. The closure gate precedes outcome/quality inspection. Training
+omits missing/nonfinite features without imputation, applies the fixed
+sample masks, and requires 720 completed eligible rows. An inconsistent
+eligible target causes explicit numerical fit failure. Forecast mappings
+use the existing allowlist and seven features; target-side fields are
+rejected. Missing current features or sensitivity-filtered feature windows
+produce the approved abstention reasons.
+
+Each midnight fit computes training-only feature means and population
+standard deviations (`ddof=0`); zero variance gets scale `1`. `math.fsum`
+and scaled `math.hypot` norms limit cancellation/overflow. Householder QR
+solves the augmented `[1,Z; 0,sqrt(alpha)I]` least-squares system directly,
+with seven penalty rows and no intercept penalty. This preserves the
+summed-square objective and avoids normal equations/inversion. Positive
+alpha stabilizes collinear features. The solver rejects a QR diagonal at
+or below `64 * binary64_epsilon * largest_original_column_norm`, nonfinite
+intermediates, or nonfinite parameters/predictions with
+`ridge_numerical_failure`; it does not change alpha or switch solvers.
+Overflow can therefore abstain even on otherwise finite inputs. Fitted
+scalers/parameters are immutable and valid only for their midnight's day;
+failed or skipped refits never reuse yesterday's fit.
+
+Alpha selection uses A-primary only, the exact grid
+`{0.01,0.1,1,10,100}`, and the three existing 2024 half-open folds ending
+May 1, September 1, and January 1, 2025. Before fitting any candidate,
+`frozen_validation_origins` fixes membership from valid outcomes, complete
+features, and the eligible-history count at each origin's midnight. Every
+candidate uses this identical set with chronologically prepared daily
+fits. Pooled RMSE uses one denominator over all candidate origins, not an
+average of fold RMSEs. Failures retain their origins and disqualify the
+entire alpha; scheduled refit failures and affected candidate-origin failures
+are retained separately. An empty set or no survivor makes Ridge unavailable. Exact
+ties choose the smallest alpha. Test outcomes are not inspected during
+selection. Test-period refits require the immutable selection result and
+the same chosen alpha for either separately fitted Lane A sample. The
+selection's analysis boundary must be no later than the test fit cutoff.
+
+Candidate failure records accept the bounded Ridge abstention vocabulary:
+`insufficient_training_history`, `ridge_numerical_failure`,
+`nonfinite_prediction`, and the seven feature-null and seven feature-anomaly
+reason codes. A-primary selection retains its existing masks; this taxonomy
+does not enable sensitivity filtering during tuning. Any returned approved
+abstention disqualifies the entire alpha and retains its origin/reason;
+only survivors receive pooled RMSE on the full frozen set. Refit failures
+have their separate insufficient-history/numerical vocabulary. Unknown
+reasons and malformed input contracts still raise errors, never forecasts.
+
+Any 2024 row marked `target_valid=true` with a missing/nonfinite target
+raises `ValidationDataIntegrityError` identifying its origin before any
+candidate fits, including feature-incomplete or cold-start rows. The row
+is not imputed, relabeled, or silently removed to change the denominator.
+
+The selection's `analysis_as_of` is an injected theoretical boundary,
+not processing time or verified publication. The caller supplies the
+complete intended research timeline and validated quality flags; no
+historical reader or evaluation orchestrator is added here. All fits,
+selection scores, and predictions exercised in 89 Ridge tests are synthetic
+and in memory. No Ridge artifacts are published or appended to PQTA-003C's
+immutable build. Historical execution needs separate approval; historical
+availability remains unverified, Lane B blocked, and trading/backtesting
+unauthorized. Numerical equivalence tests cover analytic orthogonal and
+collinear solutions and objective stationarity, but do not guarantee
+bit-identical results across Python/libm platforms.
+
 ## Data boundaries
 
 - Data moves forward through layers; downstream outputs must be reproducible
