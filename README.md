@@ -46,6 +46,7 @@ Silver data. It is not a live trading system.
 | PQTA-003D-3 | Seven-feature Ridge comparator | Synthetic Ridge Implemented; Architect Review Pending | Dependency-free augmented QR, training-only scaling, and fixed 2024 alpha-selection components; synthetic validation only. |
 | PQTA-003D-4 | Model evaluation architecture and data contract | Reporting design approved; historical execution not authorized | Accounting/metric contracts and future provenance, GitHub summaries and read-only panel; historical runner/UI unimplemented. |
 | PQTA-003D-4A | Synthetic evaluation accounting and reporting | Complete — Architect Approved (Synthetic Only) | Pure in-memory accounting, metrics, scored-set intersections and evidence-linked schema validation; synthetic fixtures only. |
+| PQTA-003D-4B | Synthetic chronological evaluation coordinator | Implemented; Architect review pending | Connects supplied synthetic features/closed targets, existing models and 4A reporting; no historical reader or artifact publication. |
 | PQTA-003 | ML Training & Evaluation | Synthetic comparator components implemented; historical evaluation pending | The origin ledger is not an approved point-in-time training dataset; historical execution requires separate authorization. |
 | PQTA-004 | Signal Decision Engine | Planned; not operational | Future decision policy; the chart currently reports `NO SIGNAL`. |
 | PQTA-005 | Chart Signal Integration | Planned; not operational | Future chart markers; none are displayed today. |
@@ -61,7 +62,7 @@ The [QNT-003 final research design](docs/QNT-003D_FINAL_RESEARCH_DESIGN.md)
 specifies zero-return, expanding-mean, and AR(1) baselines plus a seven-feature
 Ridge comparator; it reports no predictive evaluation or performance.
 The [PQTA-003D-4 evaluation contract](docs/MODEL_EVALUATION.md) describes
-implemented synthetic-only accounting/reporting and the future historical
+implemented synthetic-only coordination/accounting/reporting and the future historical
 runner, immutable publication and read-only evaluation panel.
 The [publication index](docs/evaluations/README.md) contains no results.
 Approved reporting boundaries are: training-history accounting only;
@@ -90,6 +91,10 @@ flowchart LR
     baselines["PQTA-003D-2 synthetic baseline components; no historical execution"]
     ridge["PQTA-003D-3 synthetic Ridge comparator; no historical execution"]
     accounting["PQTA-003D-4A synthetic accounting/reporting; no historical execution"]
+    synthetic["Explicit in-memory synthetic feature/target fixtures"] --> coordinator["PQTA-003D-4B chronological coordinator; synthetic only"]
+    coordinator --> baselines
+    coordinator --> ridge
+    coordinator --> accounting
     supplied["Supplied in-memory BTC/USDT OHLCV; no fetch"] --> adapter["PQTA-002B shared validation adapter"] --> features
     silver --> preview["Read-only historical preview backend"]
     preview --> http["Loopback HTTP application"] --> chart["TradingView Lightweight Charts frontend"]
@@ -158,6 +163,7 @@ installation; unpinned package versions can change on a future install.
 | Ridge comparator | Python standard library, Householder QR | Existing Python runtime; no added package | Seven-feature Ridge and frozen validation-alpha selection | Implemented and tested on synthetic inputs only |
 | Future modeling | LightGBM / XGBoost proposals | Not declared or installed in `pqta` | Possible later predictive research | **Planned only; no model execution** |
 | Statistical baselines | Python standard library, `math.fsum` | Existing Python runtime; no added package | Zero Return, Mean, and AR(1) | Implemented and tested on synthetic inputs only |
+| Synthetic coordination | Python standard library | Python 3.12.15; no new dependency | Closure/admission events, existing model calls, daily state, accounting and report validation | PQTA-003D-4B implemented; synthetic-only, Architect review pending |
 | Future interface proposal | Streamlit | Not declared or installed in `pqta` | Earlier dashboard proposal | **Planned only; current chart does not use it** |
 
 The Python declarations are in [pyproject.toml](pyproject.toml); the chart
@@ -312,6 +318,16 @@ suite ran with loopback permission. Reporting distinguishes blocked
 comparisons from zero emissions and empty scored sets. Anomaly evidence
 remains unverified/partial; valid SHA-256 syntax does not authenticate
 artifact bytes. No historical evaluation or persisted result was created.
+PQTA-003D-4B adds a pure chronological runner and synthetic integration
+tests, including guarded outcome reads, exact training cutoffs, daily
+refit failure, frozen alpha, and paired intersections. It has no CLI,
+dataset loader, writer, network path or connection to the chart.
+After Architect remediation, its 47 synthetic tests passed; the full suite
+passed **697 tests** in 12.58 seconds in `pqta`, with loopback permission
+for the HTTP preview test. Non-Test Ridge replay is prohibited, and empty
+universes produce no admission, update, emission or scoring events.
+Ruff lint/format, `pip check`, and Git whitespace checks passed. Protected
+dataset, manifest and immutable origin-artifact hashes remained unchanged.
 Tests use synthetic data and local fixtures; the HTTP test
 binds a temporary localhost
 port. The prior QNT-002B CI run passed its then-current 84-test suite; it did
@@ -334,6 +350,15 @@ files were not regenerated by the environment verification.
 - QNT-003 specifies a research protocol, not predictive findings. Lane A
   evaluation needs separate approval; verified point-in-time Lane B remains
   blocked. No model performance or profitability claim is made.
+- PQTA-003D-4B accepts only explicitly marked in-memory synthetic fixtures.
+  Synthetic feature availability, target validity and feature provenance
+  are caller-attested. `feature_open_t` alignment does not independently
+  prove causal feature construction. Historical source authentication
+  remains unimplemented. Nominal closure is not publication time.
+  Synthetic fits and metrics establish neither BTC predictability nor
+  trading profitability and are not live-trading evidence; historical
+  execution remains unauthorized. Frozen-alpha Ridge replay occurs only
+  in Test, never training-history accounting or validation diagnostics.
 
 ## Development Roadmap
 

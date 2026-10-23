@@ -276,9 +276,9 @@ bit-identical results across Python/libm platforms.
 
 ## PQTA-003D-4 evaluation architecture and synthetic-only reporting
 
-[MODEL_EVALUATION.md](MODEL_EVALUATION.md) designs a thin chronological
+[MODEL_EVALUATION.md](MODEL_EVALUATION.md) designs a future historical
 coordinator around the implemented protocol, baseline and Ridge APIs.
-It would verify the existing immutable origin build and pinned sources,
+That historical path would verify the immutable origin build and pinned sources,
 separate current forecast inputs from completed-label history, preserve
 sample-specific refit paths, and record linked forecasts, scores and
 refits before deriving paired metrics. Existing protocol, splits, masks,
@@ -322,6 +322,42 @@ models. Research metrics are not trading confidence. Selected-alpha
 validation replays and training-history performance claims are excluded.
 No historical evaluation is authorized by this
 design; Lane B and trading backtesting remain blocked.
+
+## PQTA-003D-4B chronological coordinator — synthetic only
+
+`src/quant/research/model_evaluation.py` implements `run_synthetic` on
+immutable, explicitly attested `SyntheticFixture` inputs and a bounded
+`OriginUniverse`. Status: Implemented; Architect review pending. No
+historical reader, immutable publisher, CLI or dashboard route is added.
+
+At each UTC clock event, labels with `h+1h <= origin` are admitted and
+previously emitted forecasts receive their closed-outcome audit. Then the
+Mean updates hourly and AR/Ridge refit only at 00:00; current forecasts
+use only time/current-feature views plus admitted history. The final
+clock closes the last target without adding a forecast. Admission/update
+audits record exact label origins, maximum closure, fit result and alpha.
+
+The existing AR convenience preparers accept candles, not target rows.
+A small local adapter instead constructs public `ARPair`/`ARHistory` and
+`CurrentLag` inputs from exact adjacent valid closed labels, then calls
+the existing `fit_ar`/`predict_ar`. This duplicates no return or OLS math.
+Mean and Ridge reuse their history/fit/prediction APIs. Source validity
+is asserted by the synthetic target contract, not independently verified
+from OHLCV. Gaps are never made adjacent by dropping rows.
+
+Each sample has independent fit state. Midnight invalidates prior state
+before a replacement fit; failed fits remain failures through the day.
+An initial non-midnight window cannot invent a midnight fit. Ridge uses
+only a caller-supplied frozen selection; missing selection skips fitting
+and is recorded explicitly, never replaced by a guessed alpha. The
+approved input/fit abstention priorities remain unchanged.
+
+All four methods and both samples are retained in 4A accounting. Test
+fixtures produce method-own, baseline/feature-common and paired sets;
+training has accounting only, validation only supplied candidate tuning
+diagnostics. The coordinator validates and returns report objects and
+canonical bytes in memory, not files. Report PIT/decision flags stay false;
+no historical performance, trading confidence or profitability is implied.
 
 ## Data boundaries
 

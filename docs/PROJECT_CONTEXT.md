@@ -58,6 +58,15 @@ availability. Current application behavior remains `NO SIGNAL` and
 execution remains manual. Signals, trading, and backtesting are not
 authorized by this milestone.
 
+PQTA-003D-4A accounting/reporting is Architect approved (synthetic only).
+PQTA-003D-4B now implements a synthetic-only chronological coordinator;
+Architect review is pending. It connects explicit in-memory feature/target
+fixtures to the existing four model APIs and 4A accounting/reporting,
+without historical readers, publication, dashboard integration or orders.
+Historical labels enter only after theoretical closure; this does not
+verify publication time or decision eligibility. No historical model
+evaluation has run. Lane B, trading and backtesting remain blocked.
+
 ## Out of scope
 
 - Trading strategy implementation.

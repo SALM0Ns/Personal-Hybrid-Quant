@@ -35,14 +35,17 @@ require review rather than a silent implementation choice.
 | `statistical_baselines.py` | Implemented in-memory Zero Return, Mean, AR(1), tested synthetically. |
 | `ridge_regression.py` | Implemented in-memory seven-feature Ridge, scaling and alpha selection, tested synthetically. |
 | `forecast_accounting.py`, `evaluation_reporting.py` | Implemented pure synthetic accounting, metrics, comparisons and strict evidence-linked report validation; no historical results exist. |
+| `model_evaluation.py` | PQTA-003D-4B synthetic-only chronological coordinator implemented; Architect review pending. No historical reader or publisher. |
 | Historical orchestration and published forecast/score/refit ledgers | Designed, unimplemented. |
 | Application | Read-only historical Silver chart, `NO SIGNAL`; no model evaluation view. |
 
 Scope is only the pinned Binance Spot BTC/USDT 1h history, seven existing
 features, and candidate manifest. No recalculation of Gold, new source,
 feature family, model, dependency, or research period is proposed.
+The 4B test harness below uses invented synthetic feature/return fixtures
+only; it does not consume or extend that historical study dataset.
 
-## 2. Proposed minimal architecture
+## 2. Proposed minimal historical architecture
 
 ```text
 Read-only verified origin build + pinned Silver/Gold/manifest provenance
@@ -57,9 +60,10 @@ Read-only verified origin build + pinned Silver/Gold/manifest provenance
       → future read-only local evaluation panel (separate implementation)
 ```
 
-The coordinator verifies input byte digests, dataset/build identities,
-schema, UTC keys, versions, and split assignments before use. It consumes
-the existing ledger and pinned validated Silver, never exchange APIs.
+A future historical coordinator would verify input byte digests,
+dataset/build identities, schema, UTC keys, versions and split assignments
+before use. It would consume the existing ledger and pinned validated
+Silver, never exchange APIs. That reader is not implemented by 4B.
 AR's exact source-close observations must come from pinned Silver, not a
 new return definition or row-shift approximation. Source validity and
 anomaly flags must be mapped explicitly into the existing model APIs.
@@ -528,12 +532,12 @@ These are proposals, not authorization or newly assigned milestone IDs.
 
 | File or future extension target | Responsibility and implementation status |
 | --- | --- |
-| `src/quant/research/model_evaluation.py` | Read-only coordinator, chronological paths, sample isolation, existing API adapters; no model formula duplication. |
+| `src/quant/research/model_evaluation.py` | Implemented synthetic-only chronological paths, sample isolation and public model API adapters; no historical I/O or formula duplication. |
 | `src/quant/research/forecast_accounting.py` | Implemented synthetic forecast/score records, reasons and conservation. Historical refit-record orchestration remains future work. |
 | `src/quant/research/evaluation_reporting.py` | Implemented pure metrics/intersections and strict evidence-linked schema checks. Immutable file publication and public summary projection remain future work. |
 | `configs/model-evaluation-summary.schema.v1.json` | Optional future standalone schema; not created or required by the current Python validator. |
 | `tests/test_forecast_accounting.py`, `tests/test_evaluation_reporting.py` | Implemented synthetic arithmetic, accounting, set, schema and tamper checks; no historical I/O. |
-| `tests/test_model_evaluation.py` | Future orchestrator/immutable-runner tests; no runner exists yet. |
+| `tests/test_model_evaluation.py` | Implemented synthetic coordinator tests. Historical/immutable-runner tests remain future work. |
 | `src/quant/app/server.py`, `web/index.html`, `web/app.js`, `web/style.css`, `tests/test_app_preview.py` | Later read-only summary API/panel and regression isolation; not part of evaluation execution. |
 | `docs/evaluations/`, `README.md`, `docs/ARCHITECTURE.md` | Reviewed aggregate reports and accurate implementation status. |
 
@@ -628,8 +632,8 @@ gate, not byte authentication. These distinctions remain visible even in a
 `complete` synthetic fixture report.
 Digest values are independently supplied expected identities: this stage
 does not derive evaluation build IDs, authenticate file bytes or publish
-immutable artifacts. No file or network I/O, model fitting or application
-integration is implemented. Public summary projection and historical
+immutable artifacts. These 4A modules implement no file or network I/O,
+model fitting or application integration. Public summary projection and historical
 orchestration remain future separately authorized work.
 
 **Closure: synthetic implementation Architect approved;
@@ -640,3 +644,139 @@ tests (26 added to the initial 132); all 650 regression tests passed in
 9.79 seconds with loopback permission for the existing HTTP preview test.
 Ruff lint/format, `pip check`, and whitespace checks passed. No historical
 result is implied.
+
+## 15. PQTA-003D-4B synthetic chronological runner
+
+**Status: Implemented; Architect review pending.** Governing protocol,
+dataset and reporting versions are unchanged. The four model modules and
+4A modules are reused without edits. No historical execution is authorized.
+
+### API and fixture boundary
+
+`run_synthetic(fixture, universe, *, provenance, evidence,
+evaluated_at_utc, alpha_selection=None) -> SyntheticRun` accepts only
+typed, in-memory inputs. `SyntheticFixture(synthetic=True, features=...,
+outcomes=...)` requires immutable tuples of `SyntheticFeatures` and 4A
+`Outcome` objects, sorted uniquely by origin. Each scheduled origin must
+have an explicit outcome audit; no unknown outcome is fabricated. Extra
+future fixture rows may exist but are not admitted early. Seed history
+may have holes. Missing feature rows become a null forecast-input view,
+not new observations or filled feature history.
+
+`SyntheticFeatures(origin, values, anomaly_involved_features=())` uses
+the exact seven-feature tuple order. Origin `o` means the source candle
+opens at `o-1h` and theoretically closes at `o`. Values and feature-window
+anomaly claims are supplied, not calculated or repaired. A target's
+validity asserts the approved consecutive-candle contract; the coordinator
+does not read OHLCV or independently prove those assertions. Synthetic
+attestation is a scope requirement, not cryptographic proof of data origin.
+Synthetic feature availability is caller-attested: `feature_open_t`
+alignment alone does not independently prove causal feature construction.
+Historical source authentication remains unimplemented; synthetic
+evaluation is not live-trading evidence.
+
+The result exposes forecasts, `Admission` events, `ModelUpdate` audits
+(exact eligible label origins, maximum outcome close and immutable fit),
+4A report inputs/accountings/comparisons, the validated report and its
+canonical UTF-8 bytes. There is no loader, writer, CLI, socket, publication
+command or chart integration. Receipt time is explicitly injected; fixed
+inputs/receipt/runtime produce byte-identical reports.
+
+### Event order and isolation
+
+At each scheduled UTC origin `o`, `advance(o)` admits only `h+1h <= o`
+through the existing protocol helper. No target value, validity or
+target-anomaly attribute is read before that gate. This is equivalent to
+`s+2h <= o` for candle-indexed training rows. The current target at `h=o`
+cannot enter history. The boundary phase admits closed outcomes and
+audits previously pending forecasts, before any model update/refit or
+new emission using distinct current-input
+mappings. For a nonempty universe, a final `advance(end)` classifies the
+last emitted target but does not add an origin or refit. An empty universe
+has no admission, update, emission or scoring events, even with seed history;
+its eight model/sample accounting entries have empty scores and zero counts.
+Source tuple objects are not modified.
+
+Forecast construction accepts only current feature/time fields and
+separately admitted history. Post-closure score audit copies supplied
+target/anomaly claims and derives only `feature_complete` and
+`ar_lag_valid` from the supplied current/past fixture inputs. It preserves
+anomaly types, affected fields and unverified/partial evidence labels;
+no missing manifest evidence is inferred. Score failure never retracts
+an already emitted forecast. Theoretical event time remains distinct
+from historical publication and processing receipt time.
+
+### Model adapters, refits and alpha
+
+| Method | Coordinator mapping |
+| --- | --- |
+| Zero Return | Existing `zero_return` with time-only mapping; no target or history. |
+| Mean | Closed outcomes become `HistoricalTarget` objects; existing `prepare_mean_history` and `predict_mean` apply samples, 720 minimum and `math.fsum` hourly. |
+| AR(1) | The candle convenience preparers cannot directly consume 4A outcomes. A local mapping creates public `ARPair`/`ARHistory` from exact labels `h-1h,h`, using protocol eligibility, and `CurrentLag` only from closed label `o-1h`. Existing `fit_ar`/`predict_ar` retain OLS, variance guard, 720 pairs, numerical behavior and priority. No return/OLS formula is duplicated. Two adjacent valid labels assert the three required candle opens; target-anomaly unions cover those opens in sensitivity. |
+| Ridge | Closed labels and same-origin supplied features become `ResearchRow` history; existing `prepare_history`, `fit_ridge`, `predict` retain finite-feature masks, 720 rows, train-only population scaling and QR behavior. |
+
+AR/Ridge states are separate by sample and replaced only at 00:00 UTC.
+Old state is cleared before fitting; a returned failed fit replaces
+yesterday's parameters. An unexpected exception aborts instead of
+producing a successful report. A warm fixture starting midday cannot
+invent an earlier fit and waits until the next scheduled midnight.
+
+The caller supplies `AlphaSelection` diagnostics; the runner never calls
+`select_alpha` or searches penalties. Test selection must have its boundary
+no later than the window start. One selected alpha is held throughout all
+test refits and both samples. Missing/unavailable alpha skips Ridge fitting
+and records `frozen_alpha_unavailable` in update audit. Prediction without
+a fit uses the existing null-feature/sensitivity/input/insufficient-history
+priority; it does not invent a penalty, fitted object or new forecast reason.
+Thus a missing fit can carry `insufficient_training_history` even with
+numerically sufficient seed rows, while the explicit selection blocker
+remains visible in update/report metadata. This is not a numerical fallback.
+
+Ridge fitting and selected-alpha prediction replay are Test-only, with a
+valid frozen selection available at the forecast origin and the approved
+selection boundary no later than the Test window start. Before that selection
+is mathematically available, Ridge is not fit. Training-history reports are
+accounting-only. Validation reports retain only supplied candidate tuning
+diagnostics, never a selected-alpha replay. Outside Test, midnight update
+audits record `ridge_replay_not_authorized` with no fit or selected alpha;
+forecasts retain the approved abstention reasons and outcome accounting.
+This audit-only explanation is not a new forecast/score status or reason.
+All four methods and both samples remain in accounting; no unavailable
+model silently disappears. Test windows create all four comparison scopes
+through 4A, whose blocked-comparison, count, coverage, timestamp-digest and
+null-metric policies are unchanged. No raw forecasts or summaries are saved.
+
+### Runtime and remaining boundaries
+
+No dependencies were added or changed. The inspected `pqta` environment
+uses native arm64 Python 3.12.15, Polars 2.0.0, DuckDB 1.5.6, CCXT 4.5.89,
+Pandera 0.34.1, pytz 2026.5, pytest 9.1.1 and Ruff 0.17.1. Coordination
+uses the standard library and existing modules; it does not call ingestion.
+Bit-identical results across different Python/libm platforms are not promised.
+
+Fixture target/source validity, feature causality, manifest claims and
+identity digests are caller assertions. Report validation is in-memory
+consistency, not source-byte, anomaly-evidence or PIT verification. All
+PIT/decision flags remain false. No historical metrics, BTC predictability,
+transaction costs, execution feasibility, trading confidence or profitability
+are established. Historical runner/publication, dashboard, signals and
+orders remain absent or blocked. Stop for Architect review; no Git closure
+is authorized by this implementation task.
+
+### Synthetic validation
+
+After Architect remediation, all 47 coordinator tests passed in 4.23 seconds;
+the complete repository suite passed 697 tests in 12.58 seconds using
+`pqta` (loopback permission
+for the existing preview HTTP test). Ruff lint and format check, `pip check`
+and Git whitespace checks passed. The 25 protected dataset file hashes,
+four immutable origin-build file hashes and canonical manifest digest
+matched their preflight baselines; the three pre-existing QNT-003 header
+diffs remained byte-for-byte unchanged. No files were staged or published.
+These are synthetic software checks, not historical predictive evidence.
+The regression additions independently test the non-Test period guard with
+a valid, clock-available selection, and exercise actual training/validation
+midnights with 721 seed rows and a supplied valid selection (whose availability
+is necessarily later under the real protocol). Both Ridge fit and prediction
+calls are forbidden in those integration tests. Empty windows with seed history
+are tested across all three periods with admission/model/scoring call traps.
