@@ -36,6 +36,7 @@ require review rather than a silent implementation choice.
 | `ridge_regression.py` | Implemented in-memory seven-feature Ridge, scaling and alpha selection, tested synthetically. |
 | `forecast_accounting.py`, `evaluation_reporting.py` | Implemented pure synthetic accounting, metrics, comparisons and strict evidence-linked report validation; no historical results exist. |
 | `model_evaluation.py` | PQTA-003D-4B synthetic-only chronological coordinator implemented; Architect review pending. No historical reader or publisher. |
+| `historical_adapter.py` | PQTA-003D-5A read-only pinned-source and lossless historical audit implemented; Architect review pending. No projection into 4A or execution bridge. |
 | Historical orchestration and published forecast/score/refit ledgers | Designed, unimplemented. |
 | Application | Read-only historical Silver chart, `NO SIGNAL`; no model evaluation view. |
 
@@ -63,7 +64,9 @@ Read-only verified origin build + pinned Silver/Gold/manifest provenance
 A future historical coordinator would verify input byte digests,
 dataset/build identities, schema, UTC keys, versions and split assignments
 before use. It would consume the existing ledger and pinned validated
-Silver, never exchange APIs. That reader is not implemented by 4B.
+Silver, never exchange APIs. That reader is not implemented by 4B. The
+separate 5A adapter described in §16 performs source/readiness inspection
+only; it does not connect history to this execution flow.
 AR's exact source-close observations must come from pinned Silver, not a
 new return definition or row-shift approximation. Source validity and
 anomaly flags must be mapped explicitly into the existing model APIs.
@@ -533,6 +536,7 @@ These are proposals, not authorization or newly assigned milestone IDs.
 | File or future extension target | Responsibility and implementation status |
 | --- | --- |
 | `src/quant/research/model_evaluation.py` | Implemented synthetic-only chronological paths, sample isolation and public model API adapters; no historical I/O or formula duplication. |
+| `src/quant/research/historical_adapter.py` | Implemented read-only historical source authentication, schema/identity/mask audit and lossless representations; no 4A projection or model calls. |
 | `src/quant/research/forecast_accounting.py` | Implemented synthetic forecast/score records, reasons and conservation. Historical refit-record orchestration remains future work. |
 | `src/quant/research/evaluation_reporting.py` | Implemented pure metrics/intersections and strict evidence-linked schema checks. Immutable file publication and public summary projection remain future work. |
 | `configs/model-evaluation-summary.schema.v1.json` | Optional future standalone schema; not created or required by the current Python validator. |
@@ -780,3 +784,84 @@ midnights with 721 seed rows and a supplied valid selection (whose availability
 is necessarily later under the real protocol). Both Ridge fit and prediction
 calls are forbidden in those integration tests. Empty windows with seed history
 are tested across all three periods with admission/model/scoring call traps.
+
+## 16. PQTA-003D-5A lossless historical adapter and readiness decision
+
+**Status: Implemented; Architect review pending.** The owner approved a
+lossless historical representation to resolve the source-mapping ambiguity,
+not a change to `pqta-model-evaluation-v1`, its 4A `Quality`/`Outcome`/`Score`
+types, `run_synthetic`, the models or the governing research protocol.
+The detailed mapping is in
+[PQTA-003D-5A_HISTORICAL_ADAPTER.md](PQTA-003D-5A_HISTORICAL_ADAPTER.md).
+
+### APIs and validation boundary
+
+`audit_pinned_history(root) -> HistoricalAudit` verifies exact
+approved Silver, Gold, manifest and four immutable origin-build files
+before Parquet inspection. It checks the expected artifact file set,
+pinned digests, canonical JSON and recorded identity hierarchy, then uses
+the same semantic validation core as
+`audit_frames(silver, gold, ledger, manifest, *, identity)`.
+This second API is also the synthetic in-memory test boundary;
+source identities supplied to it are not by themselves verified file bytes.
+
+Validation preserves the existing schemas and canonical seven-feature
+order, exact UTC hourly source/open/origin alignment, original source-row
+identity, approved split boundaries, finite/null feature states, target
+validity/reasons and separate target/feature/AR-lag masks. No feature or
+target dataset is regenerated. The final out-of-split origin is retained
+for audit and excluded from all three period universes. The audit is
+deterministic in memory and writes no readiness or evaluation artifact.
+
+### Architecture decision: historical is not synthetic `Outcome`
+
+Typed `HistoricalFeatures` and `HistoricalOutcome` retain source information
+without normalizing it into the restricted 4A quality vocabulary. Preserve:
+
+- Target-endpoint anomaly records separately from feature-window records.
+- Raw anomaly field names and values, including exact `candle` and `unknown`
+  tokens; neither is translated into `open`, `high`, `low`, `close` or `volume`.
+- Nullable feature states and null reasons, original target validity and
+  invalid reasons, source identifiers and source row/timestamp identity.
+- Original records with `unresolved` association when source evidence cannot
+  establish target-endpoint versus feature-window membership.
+
+The standalone `associate_anomaly` helper preserves records from an unknown
+source column under `unresolved`. This does not relax `LEDGER_SCHEMA`:
+the strict source audit rejects unknown ledger columns. Both existing
+anomaly columns have explicit associations; zero unresolved associations
+in the approved dataset is not a claim that evidence or causes are resolved.
+
+Association follows explicit source evidence, not an inferred interpretation
+of an anomaly flag. An unprojectable field is an explicit finding, not data
+to discard. These objects are not accepted as synthetic fixtures, and no
+adapter path constructs 4A `Quality`, `Outcome` or `Score` records. No
+historical model fitting, alpha selection, forecasting, score classification
+or metric calculation is performed.
+
+### Readiness and evidence limitations
+
+The audit reports observed anomaly categories, target-endpoint and
+feature-window associations, unresolved associations, evidence completeness
+and fields requiring additional projection policy. A successful read-only
+inspection may be `ready_for_architect_review`; it cannot establish full
+execution readiness. `execution_ready=false` remains explicit because the
+historical-to-4A projection policy and separate execution authorization are
+still required. Any unresolved association affecting that projection remains
+a visible limitation or blocker rather than a presumed quality claim.
+
+Pinned source-byte authentication establishes that the inspected inputs
+match the approved snapshots. It does not authenticate referenced anomaly
+evidence, resolve root causes, prove historical publication availability or
+upgrade Gold's null `available_at`/false `decision_eligible`. Manifest
+references and their evidence limitations are preserved. The 4A reporting
+milestone still has `artifact_bytes_verified=false`; the new adapter's
+separate source audit does not change that contract or certify a report.
+
+The historical adapter is deliberately not an execution bridge. A separately
+reviewed policy must define how target-endpoint, feature-window and unresolved
+records project into 4A `Quality`/`Outcome` without losing evidence, including
+non-OHLCV field tokens and their eligibility implications. Then historical
+execution requires explicit owner authorization. Lane A evaluation remains
+unauthorized; Lane B, trading and backtesting remain blocked. No publisher,
+dashboard integration, signal or order functionality is introduced.

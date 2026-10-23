@@ -47,6 +47,7 @@ Silver data. It is not a live trading system.
 | PQTA-003D-4 | Model evaluation architecture and data contract | Reporting design approved; historical execution not authorized | Accounting/metric contracts and future provenance, GitHub summaries and read-only panel; historical runner/UI unimplemented. |
 | PQTA-003D-4A | Synthetic evaluation accounting and reporting | Complete — Architect Approved (Synthetic Only) | Pure in-memory accounting, metrics, scored-set intersections and evidence-linked schema validation; synthetic fixtures only. |
 | PQTA-003D-4B | Synthetic chronological evaluation coordinator | Implemented; Architect review pending | Connects supplied synthetic features/closed targets, existing models and 4A reporting; no historical reader or artifact publication. |
+| PQTA-003D-5A | Read-only historical adapter and readiness audit | Implemented; Architect review pending | Verifies pinned source/artifact identities and preserves lossless historical features, targets and anomaly associations in memory; no execution bridge or historical fitting. |
 | PQTA-003 | ML Training & Evaluation | Synthetic comparator components implemented; historical evaluation pending | The origin ledger is not an approved point-in-time training dataset; historical execution requires separate authorization. |
 | PQTA-004 | Signal Decision Engine | Planned; not operational | Future decision policy; the chart currently reports `NO SIGNAL`. |
 | PQTA-005 | Chart Signal Integration | Planned; not operational | Future chart markers; none are displayed today. |
@@ -65,6 +66,9 @@ The [PQTA-003D-4 evaluation contract](docs/MODEL_EVALUATION.md) describes
 implemented synthetic-only coordination/accounting/reporting and the future historical
 runner, immutable publication and read-only evaluation panel.
 The [publication index](docs/evaluations/README.md) contains no results.
+The [PQTA-003D-5A adapter contract](docs/PQTA-003D-5A_HISTORICAL_ADAPTER.md)
+documents the separate read-only historical representation and readiness
+audit. It does not relabel history as synthetic inputs or authorize evaluation.
 Approved reporting boundaries are: training-history accounting only;
 Ridge validation candidate tuning diagnostics only; test comparisons use
 a frozen alpha. Research metrics are not trading confidence.
@@ -88,6 +92,10 @@ flowchart LR
     silver --> origins["PQTA-003C research-only origin ledger"]
     goldfeatures --> origins
     manifest --> origins
+    silver --> historicalaudit["PQTA-003D-5A read-only historical adapter; no execution bridge"]
+    goldfeatures --> historicalaudit
+    manifest --> historicalaudit
+    origins --> historicalaudit
     baselines["PQTA-003D-2 synthetic baseline components; no historical execution"]
     ridge["PQTA-003D-3 synthetic Ridge comparator; no historical execution"]
     accounting["PQTA-003D-4A synthetic accounting/reporting; no historical execution"]
@@ -184,6 +192,13 @@ run the current chart.
   exact UTC candle open, preserving all seven features and Gold eligibility.
   Its local `data/research/pqta-003/` origin ledger includes a next-hour
   target and audit masks but no forecast, score, fit, or model artifact.
+- **Historical audit representation:** PQTA-003D-5A reads the pinned Silver,
+  Gold, manifest and immutable origin build without changing them. It retains
+  source row/timestamp identity, nullable features, target validity/reasons,
+  and separate target-endpoint and feature-window anomaly records. Original
+  `candle` and `unknown` fields remain verbatim; the association helper keeps
+  unsupported associations `unresolved`, while the reader rejects schema drift.
+  This is not the synthetic 4A `Outcome` contract.
 - **Quality evidence:** coverage reports distinguish verified gaps from
   unknown coverage; the versioned candidate anomaly manifest remains separate
   from Silver and does not repair OHLCV values.
@@ -214,6 +229,18 @@ unresolved anomaly evidence, and zero `decision_eligible` rows. It does **not**
 establish verified point-in-time trading eligibility and is not approved for
 trading or backtesting. Data and generated reports remain local and ignored by
 Git. See [PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md).
+
+The read-only adapter verifies pinned bytes before Parquet inspection and
+checks schema, feature order, timestamps, period membership and audit masks.
+`audit_pinned_history(root)` loads only approved local sources;
+`audit_frames(silver, gold, ledger, manifest, *, identity)` supports typed,
+in-memory validation and synthetic tests. Both return audit structures in
+memory, not evaluation output files. A `ready_for_architect_review` finding
+is not execution approval: `execution_ready=false` remains explicit. Projection
+into 4A `Quality`/`Outcome` is deferred pending reviewed field/association
+policy and separate execution authorization. Source-byte authentication does
+not authenticate the manifest's referenced anomaly evidence or establish PIT
+availability; the synthetic runner's availability remains caller-attested.
 
 ## Application Workflow
 
@@ -328,6 +355,10 @@ for the HTTP preview test. Non-Test Ridge replay is prohibited, and empty
 universes produce no admission, update, emission or scoring events.
 Ruff lint/format, `pip check`, and Git whitespace checks passed. Protected
 dataset, manifest and immutable origin-artifact hashes remained unchanged.
+PQTA-003D-5A adds 62 synthetic read-only adapter tests. The full local suite
+passed **759 tests** in 12.65 seconds; Ruff lint/format, `pip check`, and Git
+whitespace checks passed. These checks do not execute historical models or
+establish trading readiness. Historical audit reports remain in memory only.
 Tests use synthetic data and local fixtures; the HTTP test
 binds a temporary localhost
 port. The prior QNT-002B CI run passed its then-current 84-test suite; it did

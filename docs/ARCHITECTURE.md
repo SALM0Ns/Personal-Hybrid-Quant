@@ -359,6 +359,51 @@ diagnostics. The coordinator validates and returns report objects and
 canonical bytes in memory, not files. Report PIT/decision flags stay false;
 no historical performance, trading confidence or profitability is implied.
 
+## PQTA-003D-5A read-only historical adapter — no execution bridge
+
+`src/quant/research/historical_adapter.py` is implemented; Architect review
+is pending. The owner-approved architecture clarification separates typed,
+lossless `HistoricalFeatures` and `HistoricalOutcome` records from the
+synthetic 4A `Quality`/`Outcome` contract. `HistoricalAdapter` holds these
+records, source identity, manifest and approved period universes;
+`HistoricalAudit` holds the adapter, report and canonical report bytes. See the
+[adapter contract](PQTA-003D-5A_HISTORICAL_ADAPTER.md).
+
+`audit_pinned_history(root)` authenticates approved Silver/Gold/manifest
+and immutable origin-build bytes before Parquet inspection. It shares the
+validation core with `audit_frames(silver, gold, ledger, manifest, *, identity)`
+to check exact schemas, ordered feature columns, UTC source/forecast identities,
+approved
+split boundaries, source joins, target validity and anomaly masks. Synthetic
+tests exercise the in-memory boundary without fitting or forecasting.
+The final out-of-split origin remains a separate audit record, never an
+evaluation opportunity. No source or immutable artifact is rewritten.
+
+The adapter preserves nullable feature values and null reasons, original
+target values and validity reasons, raw source identifiers, row identity
+and source timestamps. Target-endpoint and feature-window anomaly records
+remain distinct. Original affected-field tokens, including `candle` and
+`unknown`, are retained verbatim rather than translated into OHLCV fields.
+An association not established by source evidence is retained as
+`unresolved`, not silently assigned, by the standalone association helper.
+The pinned ledger reader still rejects unknown columns as schema drift;
+its two approved anomaly columns have explicit source associations.
+Readiness findings list observed categories, association counts, evidence
+limitations and required projection
+policies. Checking pinned source bytes does not authenticate referenced
+archive/REST evidence or determine anomaly causes.
+
+No adapter output is passed to `run_synthetic`, 4A forecast/score construction,
+or a model. Those contracts and model mathematics remain unchanged. A
+future historical execution bridge needs separately reviewed projection
+semantics, including fields outside 4A's OHLCV vocabulary and the scope of
+quality associations. `ready_for_architect_review` means only the read-only
+audit is ready for review; `execution_ready=false` remains explicit.
+Required projection policy and execution authorization remain blockers.
+Historical PIT remains unverified, Lane B and backtesting remain blocked,
+and no fit, forecast, score, metric, output file or dashboard route is
+produced by this adapter.
+
 ## Data boundaries
 
 - Data moves forward through layers; downstream outputs must be reproducible
