@@ -274,6 +274,55 @@ unauthorized. Numerical equivalence tests cover analytic orthogonal and
 collinear solutions and objective stationarity, but do not guarantee
 bit-identical results across Python/libm platforms.
 
+## PQTA-003D-4 evaluation architecture and synthetic-only reporting
+
+[MODEL_EVALUATION.md](MODEL_EVALUATION.md) designs a thin chronological
+coordinator around the implemented protocol, baseline and Ridge APIs.
+It would verify the existing immutable origin build and pinned sources,
+separate current forecast inputs from completed-label history, preserve
+sample-specific refit paths, and record linked forecasts, scores and
+refits before deriving paired metrics. Existing protocol, splits, masks,
+metric conventions and frozen Ridge alpha are unchanged.
+
+Approved `pqta-model-evaluation-v1` summaries distinguish full-period
+forecast coverage/abstentions from common scored-set metric denominators.
+New evaluation spec/build/byte identities reference, never overwrite,
+the source dataset spec and origin-build identities. A separate ignored
+`data/research/pqta-003-evaluations/` root would hold immutable local outputs;
+reviewed aggregate Markdown/JSON only may later be approved for GitHub.
+The [publication index](evaluations/README.md) contains no evaluation results.
+
+PQTA-003D-4A is Complete — Architect Approved (Synthetic Only).
+It implements `forecast_accounting.py` and
+`evaluation_reporting.py` as pure in-memory components. They validate
+scheduled origin coverage, immutable emission versus closed-outcome score
+states, deterministic exclusive/overlapping reasons, conservation, exact
+scored-set intersections, finite metrics and evidence-linked strict JSON
+reports. Bounded synthetic windows are explicitly contained within fixed
+protocol splits; they do not represent full historical evaluation.
+Training history has accounting only, Ridge validation has candidate tuning
+diagnostics only, and test fixture comparisons require frozen Ridge alpha.
+No model is fitted or dataset accessed by these modules. The Python schema
+validator reconstructs reports from independent typed in-memory evidence;
+it does not authenticate local artifact bytes or verify historical PIT.
+Final reporting precedence is blocked, no forecasts, no scored forecasts,
+then complete. Missing Ridge selection blocks its comparison, not unrelated
+method-own comparisons. Counts and timestamp denominators are retained even
+when blocked metrics are null. Explicit unverified/partial anomaly labels
+and `artifact_bytes_verified=false` prevent metadata/digest syntax from
+being mistaken for verified evidence.
+The historical runner, immutable publisher and public-summary projection
+remain unimplemented; no historical performance result exists.
+
+The read-only Model Evaluation panel and local summary endpoint are future
+designs, not application behavior. They would display research metrics,
+coverage, provenance and unverified-PIT warnings separately from signals.
+The chart still shows `NO SIGNAL`; `Analyze Now` does not fit or evaluate
+models. Research metrics are not trading confidence. Selected-alpha
+validation replays and training-history performance claims are excluded.
+No historical evaluation is authorized by this
+design; Lane B and trading backtesting remain blocked.
+
 ## Data boundaries
 
 - Data moves forward through layers; downstream outputs must be reproducible

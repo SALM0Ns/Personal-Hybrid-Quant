@@ -44,6 +44,8 @@ Silver data. It is not a live trading system.
 | PQTA-003D-1 | Synthetic evaluation protocol | Synthetic Evaluation Protocol Implemented; Architect Review Pending | Pure time, historical-label admission, sample/history, refit scheduling, and status checks; synthetic validation only. |
 | PQTA-003D-2 | Statistical baseline components | Synthetic Statistical Baselines Implemented; Architect Review Pending | In-memory Zero Return, hourly Mean, and midnight AR(1); synthetic validation only, no historical evaluation. |
 | PQTA-003D-3 | Seven-feature Ridge comparator | Synthetic Ridge Implemented; Architect Review Pending | Dependency-free augmented QR, training-only scaling, and fixed 2024 alpha-selection components; synthetic validation only. |
+| PQTA-003D-4 | Model evaluation architecture and data contract | Reporting design approved; historical execution not authorized | Accounting/metric contracts and future provenance, GitHub summaries and read-only panel; historical runner/UI unimplemented. |
+| PQTA-003D-4A | Synthetic evaluation accounting and reporting | Complete — Architect Approved (Synthetic Only) | Pure in-memory accounting, metrics, scored-set intersections and evidence-linked schema validation; synthetic fixtures only. |
 | PQTA-003 | ML Training & Evaluation | Synthetic comparator components implemented; historical evaluation pending | The origin ledger is not an approved point-in-time training dataset; historical execution requires separate authorization. |
 | PQTA-004 | Signal Decision Engine | Planned; not operational | Future decision policy; the chart currently reports `NO SIGNAL`. |
 | PQTA-005 | Chart Signal Integration | Planned; not operational | Future chart markers; none are displayed today. |
@@ -58,6 +60,16 @@ The seven implemented BTC/USDT features are `log_return_1h`,
 The [QNT-003 final research design](docs/QNT-003D_FINAL_RESEARCH_DESIGN.md)
 specifies zero-return, expanding-mean, and AR(1) baselines plus a seven-feature
 Ridge comparator; it reports no predictive evaluation or performance.
+The [PQTA-003D-4 evaluation contract](docs/MODEL_EVALUATION.md) describes
+implemented synthetic-only accounting/reporting and the future historical
+runner, immutable publication and read-only evaluation panel.
+The [publication index](docs/evaluations/README.md) contains no results.
+Approved reporting boundaries are: training-history accounting only;
+Ridge validation candidate tuning diagnostics only; test comparisons use
+a frozen alpha. Research metrics are not trading confidence.
+Historical Lane A evaluation still needs separate authorization; Lane B and
+trading backtesting remain blocked. Inspecting a model will not select it
+for trading, and `Analyze Now` continues refreshing local history only.
 
 ## System Architecture
 
@@ -77,6 +89,7 @@ flowchart LR
     manifest --> origins
     baselines["PQTA-003D-2 synthetic baseline components; no historical execution"]
     ridge["PQTA-003D-3 synthetic Ridge comparator; no historical execution"]
+    accounting["PQTA-003D-4A synthetic accounting/reporting; no historical execution"]
     supplied["Supplied in-memory BTC/USDT OHLCV; no fetch"] --> adapter["PQTA-002B shared validation adapter"] --> features
     silver --> preview["Read-only historical preview backend"]
     preview --> http["Loopback HTTP application"] --> chart["TradingView Lightweight Charts frontend"]
@@ -291,6 +304,14 @@ the full local suite passed 492 tests, Ruff lint/format, and `pip check`.
 Ridge is synthetic-first until
 separately authorized historical validation. No historical forecasts,
 metrics, signals, or trading-readiness claims follow from these tests.
+PQTA-003D-4A has 158 synthetic accounting/reporting tests after Architect
+remediation (26 added to the initial 132); the full local suite passed
+650 tests. Ruff lint/format, `pip check`, and whitespace checks passed.
+The HTTP regression test requires localhost socket binding; the full
+suite ran with loopback permission. Reporting distinguishes blocked
+comparisons from zero emissions and empty scored sets. Anomaly evidence
+remains unverified/partial; valid SHA-256 syntax does not authenticate
+artifact bytes. No historical evaluation or persisted result was created.
 Tests use synthetic data and local fixtures; the HTTP test
 binds a temporary localhost
 port. The prior QNT-002B CI run passed its then-current 84-test suite; it did

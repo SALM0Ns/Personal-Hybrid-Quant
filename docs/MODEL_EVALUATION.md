@@ -1,0 +1,642 @@
+# PQTA-003D-4 — Model Evaluation Architecture and Data Contract
+
+**Status: reporting contract approved; PQTA-003D-4A Complete — Architect
+Approved (Synthetic Only).** Historical evaluation,
+artifact publication and dashboard integration remain unimplemented.
+This milestone does not authorize historical fitting, forecasting, scoring,
+Lane A execution, trading backtesting, inference, signals, or orders.
+
+## 1. Scope, authority, and implementation boundary
+
+The product goal is practical personal BTC/USDT 1h decision support with
+manual execution, not an academic publication. Research metrics are an
+engineering check, not trading confidence, profitability, or authorization
+to select a trading model.
+
+This proposal was inspected against commit
+`b0d33fb574fcb67acbd89da9c4fefd8b136f57fe`. Normative policies remain
+[QNT-003B §§2–7](QNT-003B_EVALUATION_PROTOCOL.md), closed by
+[QNT-003D](QNT-003D_FINAL_RESEARCH_DESIGN.md), under
+`qnt-003d-design-v1`. The source dataset contract remains
+`pqta-003b-origin-ledger-v1`; see the
+[approved architecture](PQTA-003B_ML_ARCHITECTURE_DESIGN.md) and
+[dataset implementation](PQTA-003C_DATASET_IMPLEMENTATION.md).
+The owner approved synthetic accounting/reporting under this version,
+candidate tuning diagnostics only for Ridge validation, training-history
+accounting only, and frozen-alpha test comparison. Research metrics are
+not trading confidence. Storage/publication and UI remain future designs,
+not amendments to statistical policy. Conflicts
+require review rather than a silent implementation choice.
+
+| Component | Actual state at this design |
+| --- | --- |
+| Silver/Gold and origin ledger | Existing immutable local research inputs; the origin ledger already has retrospective targets. |
+| `evaluation_protocol.py` | Implemented pure time, eligibility, status and conservation checks. Not an evaluation runner. |
+| `statistical_baselines.py` | Implemented in-memory Zero Return, Mean, AR(1), tested synthetically. |
+| `ridge_regression.py` | Implemented in-memory seven-feature Ridge, scaling and alpha selection, tested synthetically. |
+| `forecast_accounting.py`, `evaluation_reporting.py` | Implemented pure synthetic accounting, metrics, comparisons and strict evidence-linked report validation; no historical results exist. |
+| Historical orchestration and published forecast/score/refit ledgers | Designed, unimplemented. |
+| Application | Read-only historical Silver chart, `NO SIGNAL`; no model evaluation view. |
+
+Scope is only the pinned Binance Spot BTC/USDT 1h history, seven existing
+features, and candidate manifest. No recalculation of Gold, new source,
+feature family, model, dependency, or research period is proposed.
+
+## 2. Proposed minimal architecture
+
+```text
+Read-only verified origin build + pinned Silver/Gold/manifest provenance
+  → chronological event coordinator
+      → allowlisted current-origin view → existing model prediction APIs
+      → separately admitted completed history → existing fit/update APIs
+      → immutable forecast/refit accounting
+  → post-closure outcome audit → separate score accounting
+  → scored-set intersections → metrics + conservation validation
+  → immutable LOCAL evaluation build + bounded reviewed summary
+      → manual GitHub documentation publication (separate approval)
+      → future read-only local evaluation panel (separate implementation)
+```
+
+The coordinator verifies input byte digests, dataset/build identities,
+schema, UTC keys, versions, and split assignments before use. It consumes
+the existing ledger and pinned validated Silver, never exchange APIs.
+AR's exact source-close observations must come from pinned Silver, not a
+new return definition or row-shift approximation. Source validity and
+anomaly flags must be mapped explicitly into the existing model APIs.
+
+At each origin, expose only `forecast_side_view`-allowlisted fields to
+prediction; pass historical labels via the separate history APIs after
+closure gating. Do not pass a whole outcome-bearing ledger row to a model.
+Process the two samples independently, including their fitted histories.
+Validate input contracts and approved abstention reasons; malformed data,
+unknown codes, identity mismatch or broken conservation abort publication.
+Legitimate cold starts and numerical model abstentions remain auditable
+outcomes, not dropped records or substituted predictions.
+
+Keep the existing origin-build directory immutable. Proposed evaluation
+storage is a **separate** ignored local root:
+`data/research/pqta-003-evaluations/<evaluation_spec_id>/<evaluation_build_id>/`.
+It would contain `forecast_ledger.parquet`, `score_ledger.parquet`,
+`refits.parquet`, `alpha_selection.json`, `metrics.json`,
+`validation.json`, `provenance.json`, and `provenance.sha256`.
+No directory or artifact is created in this design task.
+
+## 3. Time and period contract — inherited, not revised
+
+For candle open `t`, origin `o=t+1h`, target
+`y_t=ln(C_(t+1h)/C_t)`, and theoretical target close `o+1h`:
+
+1. Close/validate candle `t` at the theoretical boundary `o`.
+2. Admit historical labels only when `historical_label_origin+1h <= o`
+   (equivalently candle-indexed `s+2h <= o`).
+3. Perform the scheduled refit, then emit/abstain without current-target
+   values, validity, next-candle flags or scoreability.
+4. Only after target closure, apply outcome quality and score classification.
+
+At `2025-01-01 00:00Z`, current feature open is `2024-12-31 23:00Z`.
+The newest admissible historical label origin is `2024-12-31 23:00Z`;
+it closes at 00:00. The current label origin is 00:00 and its outcome
+closes at 01:00; it cannot enter the midnight fit. Equal-clock close
+precedes refit by mathematical event order, not publication evidence.
+
+| Period ID | Origin interval `[start,end)` UTC | Result interpretation |
+| --- | --- | --- |
+| `training_history` | `[2021-01-01 01:00, 2024-01-01 00:00)` | History/cold-start accounting; never held-out model performance. |
+| `validation` | `[2024-01-01 00:00, 2025-01-01 00:00)` | Prespecified selection period; selected Ridge scores are tuning results. |
+| `test` | `[2025-01-01 00:00, 2026-10-20 13:00)` | Frozen-protocol chronological comparison; earlier completed outcomes may enter later scheduled refits. |
+
+The 50,845-origin source audit timeline includes one origin at
+`2026-10-20 13:00Z` outside all splits. Report it separately; never add it
+to forecast/score counts. Last in-split test origin is 12:00Z and closes
+at the fixed `analysis_as_of=2026-10-20 13:00Z`. Split union has 50,844
+origins, not 50,845. These are existing timeline facts, not evaluation results.
+No split movement, random split, retrospective regime predictor, new
+embargo, or full-sample preprocessing is introduced.
+
+## 4. Versioned machine-readable comparison schema
+
+JSON format: `pqta-model-evaluation-v1`. The strict Python validator
+rejects unknown schema versions, duplicate record keys, incorrect types,
+invalid digests, nonfinite numbers and unreconciled counts by rebuilding
+the expected report from independent typed in-memory evidence. No external
+JSON-schema dependency or standalone JSON Schema file is needed for this
+stage. No historical result file has been generated.
+
+The envelope contains `schema_version`, `evaluation_spec_id`,
+`evaluation_build_id`, `provenance`, `validation`, `alpha_selection`,
+`comparison_sets`, ordered `results`, and an `accounting` array.
+`accounting` contains per-period/model/sample counts and quality metadata
+without performance metrics, including training history and validation.
+`results` and `comparison_sets` are test-period synthetic comparisons only.
+The fixed window interpretation distinguishes accounting, tuning and test.
+`provenance` binds every input
+and local output digest, source feature/manifest versions, fixed
+`analysis_as_of`, source-ledger byte digest, code/runtime/dependency
+identities and processing-time policy; `validation` records all completion
+gates in §8. Market identity is exactly `binance`, `BTC/USDT`, `1h`, with
+target `target_next_1h_log_return` and unit `raw_hourly_log_return`.
+`alpha_selection` retains grid, folds, frozen candidate-set digest/count,
+all candidate statuses/failure origins/reasons and the frozen winner.
+The public projection omits individual failure-origin arrays and refers
+to their verified local artifact digest instead; aggregate reason counts
+remain public. Public summary bytes have their own digest.
+
+Each `results` record has the following required fields (nullable only
+where stated):
+
+| Field | Type and semantics |
+| --- | --- |
+| `exchange`, `symbol`, `timeframe`, `target_name`, `target_unit` | Fixed non-null strings matching the envelope's market and target identity. |
+| `model_id` | Enum `zero_return`, `expanding_mean`, `ar_1`, `ridge_7`; display names Zero Return, Expanding Mean, AR(1), Ridge Regression (7 Features). |
+| `evaluation_period` | Object `{period_id, start_utc, end_exclusive_utc, interpretation}` matching §3; no moving end. |
+| `sample_policy` | Enum `a_primary`, `a_sensitivity`. No combined sample score. |
+| `comparison_scope` | Enum `method_own`, `baseline_common`, `feature_common`, `paired_sensitivity_common`. Own-set metrics are descriptive, not direct method comparisons. |
+| `comparison_id`, `timestamp_set_sha256` | Comparison identity and exact metric-set digest; participant models/samples are declared in `comparison_sets`. |
+| `rmse`, `mae`, `directional_accuracy` | Nullable finite binary64 numbers; definitions in §5. Metrics are null for an empty set or blocked comparison. Numerical failure raises rather than dropping rows or producing a completed report. No NaN/Infinity. |
+| `metric_count` | Nonnegative integer, exact cardinality of this record's declared scored timestamp set, retained even when blocked prerequisites prevent metric computation. |
+| `origin_count` | All scheduled in-split hourly origins in this period, independent of target, history, feature validity or model success. |
+| `forecast_count`, `abstention_count` | Nonnegative integers `N_emitted`, `N_abstained` for the method/sample/full period, not the common-set subset. |
+| `forecast_coverage` | Nullable number in `[0,1]`, approved `forecast_count/origin_count`; null only if denominator zero. Not accuracy or confidence. |
+| `own_scored_count`, `emitted_but_not_scored_count`, `not_scored_no_forecast_count` | Full-period method/sample counts, distinct from `metric_count` on a comparison subset. |
+| `abstention_reasons` | Code-to-count object of exclusive forecast abstentions under existing method priority; sums to `abstention_count`. |
+| `primary_score_exclusion_counts`, `all_score_exclusion_counts` | Exclusive score funnel and multi-label overlap counts under QNT-003B §6; only the exclusive counts reconcile to origins. Unknown historical availability remains separately visible. |
+| `quality_counts` | Full-period target-valid, feature-complete, lag-valid, anomaly type/field, unknown availability and false Gold eligibility counts; categories can overlap. |
+| `evaluation_status`, `status_reasons` | Final reporting status and deterministic reason list from §8. Status describes evidence/process, never profitability. |
+| `evaluated_at_utc` | Nullable UTC processing-completion time; null for an unexecuted/blocked record. Never historical availability or forecast origin. |
+| `dataset_spec_id`, `artifact_build_id` | Existing logical source dataset identity and **source origin-ledger** build identity. Do not reuse this build ID for evaluation bytes. |
+| `protocol_version`, `dataset_contract_version` | Exactly `qnt-003d-design-v1`, `pqta-003b-origin-ledger-v1`. |
+| `evaluation_spec_id`, `evaluation_build_id` | Distinct new reporting identities in §9; repeated for portable records. |
+| `research_mode`, `point_in_time_verified`, `decision_eligible` | Exactly `retrospective`, `false`, `false` for this proposal; never overwrite original Gold fields. |
+| `selected_alpha`, `alpha_selection_sha256` | Nullable Ridge-only metadata; linked to frozen A-primary validation selection, not test optimization. |
+
+Unique result key is `(evaluation_build_id, period_id, sample_policy,
+comparison_scope, comparison_id, model_id)`. Each comparison-set descriptor
+contains its ID, period, ordered model/sample participants, count,
+first/last origin (null for empty), and timestamp digest. The paired
+sensitivity descriptor includes both samples explicitly. Each descriptor
+also carries aggregate `evaluation_status` and ordered `participant_statuses`
+(model, sample, raw method status and reasons). All methods on
+one comparison set share its digest and `metric_count`; full-period
+emission counts are repeated unchanged across that method's comparison
+records and **must not be added together** across scopes.
+
+## 5. Metric definitions — inherited
+
+For exactly the declared scored origin set `E`, `n=|E|>0`,
+`e_o=prediction_o-target_o`, using raw hourly log-return units:
+
+```text
+rmse = sqrt(sum(e_o**2) / n)           # primary
+mae = sum(abs(e_o)) / n               # secondary
+directional_accuracy = sum(sign(prediction_o) == sign(target_o)) / n
+```
+
+Sign is -1, 0, +1; zero means **exactly** zero, including signed binary
+zero. No neutral band, tolerance, rounding, or exclusion of zero outcomes.
+A zero forecast is directionally correct only when actual is exactly zero.
+Directional accuracy is diagnostic, not a trading edge or confidence.
+Metrics are fractions/raw returns, not percentages or annualized values;
+a UI may format accuracy/coverage as percentages without altering bytes.
+
+Proposed deterministic reduction: sorted unique origins, binary64 checked
+errors, scaled `math.hypot` RMSE (as in existing `pooled_rmse`) and
+`math.fsum` absolute-error reduction, integer direction matches. Any
+nonfinite intermediate is an explicit reporting failure, not permission
+to drop scored origins. No rounding before calculation, no average of
+fold/period RMSEs; a pooled result must pool errors with its own count.
+Formatting precision is display-only. Exact implementation choices need
+synthetic equivalence/overflow tests before use, not new dependencies.
+
+If `n=0`, all three metrics are null with a reason, not zero. For empty
+comparison sets, report count zero, null endpoints and SHA-256 of empty
+bytes. No ranking or winner is displayed. A one-row metric can be
+arithmetically defined; the protocol supplies no minimum statistically
+sufficient test count or profitability threshold. Do not invent one or
+equate a nonempty metric with sufficient trading evidence.
+
+## 6. Denominators, exclusions, and immutable accounting
+
+The approved **forecast opportunity denominator** is every hourly
+origin scheduled inside the selected approved split (`N_origins`). It
+includes cold start, invalid inputs, missing targets and later anomalies.
+Do not condition emission coverage on an ex-post valid target, `F_t`,
+successful fit, or scored-set membership. Input-eligible and target-valid
+subcounts may additionally be reported with explicit labels, never used
+silently as `forecast_coverage`'s denominator. Empty period coverage is
+null, with `empty_origin_universe`; a nonempty period with no emissions
+has coverage 0 and null metrics.
+
+Preserve distinct, final forecast and score fields per origin/method/sample:
+
+```text
+forecast_status: emitted | abstained
+score_status: scored | emitted_but_not_scored | not_scored_no_forecast
+N_origins = N_emitted + N_abstained
+N_emitted = N_scored + N_emitted_but_not_scored
+N_abstained = N_not_scored_no_forecast
+N_origins = N_scored + sum(exclusive primary score exclusions)
+```
+
+A missing/invalid/incomplete next candle makes the target unscorable; it
+does not cancel a finite forecast already emitted. A-sensitivity's target
+anomaly filter is also post-outcome. Features and AR lags have separate
+forecast-side validity/anomaly masks. Preserve all overlapping reasons and
+the existing QNT-003B §6 total exclusive precedence without replacing it
+with model error priority. No gap filling, interpolation, fabricated close,
+silent anomaly removal, stale fit, or imputation is allowed.
+
+Final `scored` and `emitted_but_not_scored` require the theoretical target
+close to have occurred; `not_scored_no_forecast` may be known at origin.
+No fourth pending score status is introduced. An incomplete run cannot
+publish an apparently final ledger or claim completeness.
+
+Rows marked target-valid with missing/nonfinite targets are inconsistent
+inputs, not ordinary missing targets: fail closed at validation instead of
+altering validity or the denominator. Preserve existing model behavior
+if such inconsistent data reaches a component: Mean explicitly abstains,
+AR/Ridge may fail numerically, and Ridge alpha selection raises
+`ValidationDataIntegrityError`. The coordinator must not hide these as
+successful evaluation or silently delete eligible labels.
+
+## 7. Model comparison and tuning contract
+
+| Model | Historical requirement and update | Failure accounting |
+| --- | --- | --- |
+| Zero Return | No history; emit finite `0.0` at every in-split origin in each sample. | No outcome-dependent abstention. Invalid targets affect scoring only. |
+| Expanding Mean | At least 720 completed sample-eligible targets; update hourly using existing `math.fsum` API. | Explicit cold start/numerical abstention; never substitute zero. |
+| AR(1) | At least 720 exact three-candle consecutive training pairs; exact two-candle current lag. Daily 00:00 fit with existing centered OLS/variance guard. | Missing/anomalous lag, cold start, ill-conditioning and numerical reasons remain visible; failed/skipped midnight cannot reuse yesterday's fit. |
+| Ridge (7 Features) | At least 720 completed eligible feature/target rows; seven finite features, training-only population scaling, existing QR solver. Daily 00:00 fit. | Missing/anomalous features and fit/numerical abstentions remain visible; no imputation or stale fit. |
+
+A-primary retains numerically valid anomaly-flagged inputs. A-sensitivity
+uses the same pinned 19-record candidate manifest: exclude target endpoint
+anomalies from historical training and scoring; additionally exclude AR
+lag/pair anomalies and Ridge feature-window anomalies as specified in
+QNT-003B §6. Preserve source field sensitivity separately from this
+conservative any-anomaly filter. All sample paths fit independently.
+
+Ridge selection is A-primary 2024 only, with alpha grid
+`{0.01,0.1,1,10,100}` and folds `[2024-01-01,2024-05-01)`,
+`[2024-05-01,2024-09-01)`, `[2024-09-01,2025-01-01)` UTC.
+Freeze the candidate timestamp set from target/feature/720-history rules
+before candidates. Any failed candidate forecast disqualifies the entire
+alpha and records origin/reason; never shrink its denominator. Pool
+validation RMSE, exact ties to smallest alpha. Malformed contracts abort,
+not successful candidates. Empty set/all disqualified means Ridge
+unavailable. Freeze selection before any test scoring and for both sample
+paths throughout test; daily refits change scaler/coefficients only.
+Selection boundary must be no later than each test fit cutoff. Wall-clock
+processing later than the historical period does not authorize test tuning.
+
+For each period/sample report separately:
+
+- `method_own`: own scored-set diagnostics with full coverage/abstentions.
+- `baseline_common`: exact intersection of Zero/Mean/AR scored-origin sets.
+- `feature_common`: exact intersection of all four scored sets, including
+  `F_t` and the sample's feature-side rule. Recompute **all four** metrics
+  on that identical set; do not compare Ridge-own against baseline-own.
+- `paired_sensitivity_common`, if approved for publication: intersection
+  of A-primary and A-sensitivity common sets for the same participant
+  group. State `baseline_common` or `feature_common` as the parent group;
+  both sample paths use that one further-restricted set. This is descriptive,
+  not a causal anomaly effect.
+
+Publish every set's count, endpoints and canonical SHA-256. Use the
+inherited timestamp encoding: sorted unique UTC origins as
+`YYYY-MM-DDTHH:MM:SSZ\n` UTF-8; empty set is empty bytes. Do not replace
+it with canonical JSON timestamp encoding. Keep the exact membership
+locally for reconstruction. A missing Ridge cannot silently turn a
+four-model comparison into a three-model claim; an empty feature-common
+set has null metrics and an unavailable explanation.
+
+The selected-alpha validation score is a tuning score, never independent
+holdout evidence. The approved validation output is **candidate tuning
+diagnostics only for Ridge**. No selected-alpha four-model or sensitivity
+validation replay is published by this contract. Training history is
+**accounting only**, not a performance comparison; no preselection alpha
+is invented. The existing selection API returns candidate diagnostics;
+future integration must retain those diagnostics, not reconstruct
+predictions from aggregate RMSE. Test method ranking is descriptive;
+it cannot choose a trading model, tune a threshold or authorize deployment.
+
+## 8. Evaluation status and completion evidence
+
+Reporting statuses are `not_run`, `complete`, `no_forecasts`,
+`no_scored_forecasts`, `blocked`, `failed`. They are reporting statuses,
+not new forecast/score statuses. No historical result exists today;
+the UI default would be `not_run`, not a successful zero-valued result.
+
+For validly constructed final reports, status precedence is explicitly:
+`blocked` → `no_forecasts` → `no_scored_forecasts` → `complete`.
+First check prerequisites. Then use **full-period** method emissions to
+distinguish no forecasts; only then examine the comparison's scored set.
+An empty common set is not evidence that a method emitted nothing.
+`failed` remains the lifecycle classification for invalid/interrupted
+execution; `not_run` remains unexecuted. Neither is a new forecast/score
+status or a value inferred from empty performance data. The pure builder
+raises on invalid contracts/numerics; it does not fabricate failure metrics.
+
+- `complete`: authorized full requested period processed; evidence below
+  validated; declared metric set nonempty and finite. This means an
+  operationally complete retrospective result, not useful prediction.
+- `no_forecasts`: nonempty opportunity universe, zero emissions; null
+  metrics, coverage 0, explicit abstention counts/reasons. Do not call it
+  a completed performance comparison.
+- `no_scored_forecasts`: full accounting validated but declared metric
+  set empty (including empty common set despite method-own forecasts).
+  Metrics null; full-period coverage is retained unchanged. Reason
+  distinguishes no own scorable outcomes from no common timestamps.
+- `blocked`: missing authorization, empty origin universe, absent input,
+  incompatible identity/version, or unavailable mandatory prerequisite
+  such as no frozen Ridge alpha; no fabricated measurements.
+- `failed`: interrupted execution, contract/data integrity, reconciliation,
+  artifact verification or reporting-numerical failure. Partial diagnostic
+  files stay local and cannot masquerade as complete results.
+
+Ridge-specific prerequisite rules are fixed: missing/unavailable selection
+means `blocked`, even with zero emissions. With a valid frozen selection,
+zero period emissions means `no_forecasts`; finite emissions but an empty
+scored comparison means `no_scored_forecasts`; a nonempty scored set with
+all prerequisites satisfied means `complete`. Alpha selection itself is
+unchanged.
+
+The comparison descriptor aggregates participant statuses with the same
+precedence. Any blocked participant blocks the comparison and every metric
+record **in that comparison**, with `comparison_participant_blocked` for
+otherwise-ready peers. Raw per-method states remain in `participant_statuses`.
+An independent method-own comparison may still complete. This prevents a
+blocked Ridge from making a four-model result appear complete without
+mislabeling baseline-own results. Without blocked prerequisites, individual
+method states stay distinct: one method can be `no_forecasts` while peers
+with emissions are `no_scored_forecasts` on their empty common set.
+
+Blocked records retain supplied emission/abstention/score accounting,
+coverage, comparison membership/digest and `metric_count`; metrics are null
+and no performance reduction runs. Nonempty blocked fixture data is not
+certified as valid Ridge output. No forecast emission is retroactively
+changed, no denominator is reset to hide the block, and no failed origin
+is dropped.
+
+Minimum evidence for `complete` is **all** of:
+
+1. Separate owner execution authorization, fixed reviewed evaluation
+   configuration and hash-verified origin/Silver/Gold/manifest provenance.
+2. Exact origin coverage, unique linked forecast/score keys for both samples
+   and all requested methods, including abstentions and unscorable targets.
+3. Refits/history counts/max outcome closes, current-input isolation,
+   no stale parameters, frozen Ridge selection and candidate failures logged.
+4. All per-period/method/sample conservation and reason-priority checks,
+   scored-set intersections and digests validated; finite metric reductions.
+5. Synthetic/regression acceptance and deterministic pinned rerun checks;
+   immutable artifact byte hashes and a human-reviewed limitations summary.
+
+Individual model abstentions do not by themselves make a fully accounted
+nonempty result incomplete. A run-validation record separately reports
+whether all requested accounting completed; it does not upgrade a
+`no_forecasts`, empty comparison or unavailable model to performance success.
+A four-model claim requires all four on a nonempty identical scored set.
+There is no approved minimum coverage or practical evidence threshold;
+low counts/coverage must remain visible, not suppressed by a success badge.
+
+## 9. Reproducibility and provenance proposal
+
+Reuse source `dataset_spec_id` and source `artifact_build_id` unchanged;
+verify the four origin-build files and canonical manifest, not just a
+human-readable report. Do not append to that immutable build.
+
+- `evaluation_spec_id`: canonical hash of reporting-contract version,
+  governing protocol, source dataset/build and exact input byte digests,
+  fixed analysis boundary, requested periods/models/samples/comparison
+  groups, fixed tuning/refit/metric policies. This identifies intended
+  evaluation independently of implementation. Selected alpha is an output,
+  not a parameter chosen after test inspection.
+- `evaluation_build_id`: canonical hash of evaluation spec, content hashes
+  of every executed model/protocol/coordinator/reporting module, Git
+  revision, exact Python/dependency/platform/libm evidence, serializer,
+  schema/row/field ordering, deterministic writer/reduction configuration,
+  and any injected processing timestamp embedded in bytes.
+- `artifact_sha256`: exact bytes for each published local file and each
+  GitHub summary. Provenance has a sidecar digest, not its own recursive hash.
+
+Proposed JSON canonicalization follows PQTA-003C: sorted keys, compact
+UTF-8, `ensure_ascii=false`, `allow_nan=false`, final newline; timestamps
+UTC `YYYY-MM-DDTHH:MM:SS.ffffffZ`. Schema fixes array ordering by
+period (`training_history`, `validation`, `test`), sample (`a_primary`,
+`a_sensitivity`), lexicographic comparison ID, then model (`zero_return`,
+`expanding_mean`, `ar_1`, `ridge_7`). Comparison descriptor arrays use
+period then lexicographic ID; reason arrays use governing priority,
+refits/origins ascend, and alpha candidates use ascending numeric order.
+These orders are enforced in the in-memory reporting schema. Float values
+use finite Python binary64 JSON round-trip numbers;
+pin serializer/runtime, do not promise cross-platform bit identity.
+Parquet uses pinned schema and writer settings recorded in the build.
+
+`evaluated_at_utc` is processing time, not `analysis_as_of`. Inject a
+fixed completion timestamp into deterministic published bytes and include
+it in build identity; variable rerun timings belong in a separate receipt.
+A new time embedded in bytes implies a new build identity, not an overwrite.
+The same pinned build must reproduce identical bytes; otherwise fail
+closed. Verify expected file set, all digests and no unexpected files;
+publish atomically only after validation. None is executed in this task.
+
+## 10. Read-only dashboard integration contract — future only
+
+The current application is a historical candlestick preview, not an
+implemented evaluation dashboard. A later separately authorized change
+may add an independent **Model Evaluation** panel and a bounded local
+GET-only summary endpoint, proposed `/api/model-evaluations`.
+
+The endpoint would load only schema-validated, digest-verified, explicitly
+configured summary builds; never accept arbitrary filesystem paths or
+launch fitting/evaluation. No credentials, external URL, arbitrary fetch,
+or raw forecast rows are exposed. Missing file gives `not_run`; corrupt,
+unsupported or provenance-mismatched summary gives a visible unavailable
+error, never cached metrics presented as current success.
+
+Display inspected model, period with exclusive end, sample, comparison
+scope/participants, RMSE, MAE, exact-zero directional accuracy, metric
+count, opportunity/emission/abstention counts, forecast coverage, status,
+source/evaluation IDs and processing time. Show null as “Not available,”
+not `0`. Display all four methods including unavailable ones; allow
+inspection, not automatic best-model deployment.
+
+Persistent warnings must state **HISTORICAL / RESEARCH ONLY** and
+**POINT-IN-TIME AVAILABILITY UNVERIFIED — NOT APPROVED FOR TRADING**.
+Validation selection scores must be labeled separately from test metrics.
+No metric becomes signal confidence or live suitability. No BUY/SELL/HOLD,
+forecast overlay or position/order action is introduced. The chart's
+`NO SIGNAL` stays unchanged; `Analyze Now` continues refreshing Silver
+only, not refitting models, selecting alpha or running an evaluation.
+
+## 11. GitHub documentation/publication plan
+
+This document is the proposed human-readable architecture. The publication
+index is [evaluations/README.md](evaluations/README.md). After separate
+execution, validation and owner approval, propose a small reviewed pair:
+
+- `docs/evaluations/<evaluation_build_id>.md`: methods, exact periods,
+  counts, paired metrics, provenance, failures and limitations.
+- `docs/evaluations/<evaluation_build_id>.summary.json`: versioned public
+  projection with aggregate results, counts/set digests, identities and
+  artifact references, not predictions or market observations.
+
+Require private-path/secret scanning and staged-diff allowlisting. Keep
+origin/forecast/score/refit Parquet, source OHLCV, row-level targets,
+archive/REST evidence and fitted scalers/coefficients local under ignored
+`data/`. No large attachments, release assets or automatic publication.
+Aggregate facts and digests are sufficient for a provenance-linked public
+summary but not independent dataset-free reproduction; say so. Changes
+to existing published immutable results require a new identity and an
+explicit supersession note, not rewritten results. No summary with
+invented numbers or claimed performance is created now.
+
+## 12. Unresolved decisions and approval gates
+
+| Decision | Proposed disposition; approval needed |
+| --- | --- |
+| Reporting format/status/coverage | Approved for synthetic implementation: `pqta-model-evaluation-v1`, §4/§6 opportunity denominator and §8 reporting statuses. Eligibility is unchanged. |
+| Validation reporting paths | Resolved: candidate tuning diagnostics only for Ridge. No selected-alpha validation replay or holdout claim. |
+| Training-history outputs | Resolved: accounting only; no performance metrics or invented preselection penalty. |
+| Test comparisons | Resolved: frozen-alpha model comparison only; no test-based model deployment or trading confidence. Historical execution is still not authorized. |
+| Subperiods/evidence thresholds | Default reporting is the fixed protocol splits. Additional monthly/yearly reports, display precision and any minimum-evidence caution thresholds must be frozen before affected results; no new statistical threshold is selected here. |
+| Publication/UI | Approve bounded public projection, local storage and future GET-only adapter independently; this does not authorize execution. |
+| Execution | Owner must separately authorize historical Lane A fitting/forecasting/scoring, immutable local publication, then public summaries. None is authorized by this design. |
+
+Unresolved historical availability is not an implementation bug to bypass.
+Preserve Gold `available_at=null`, `decision_eligible=false`, candidate
+manifest `version_available_at=null`, unresolved discrepancy/shortened-close
+interpretation and archive/local-only missing-hour evidence. Lane A is
+retrospective even when chronological and numerically correct; Lane B and
+historical trading backtesting remain blocked. No metric resolves fees,
+slippage, execution latency or profitability. A protocol ambiguity/change
+requires a versioned owner decision, not a new model default.
+
+## 13. Implementation milestones and future extension targets
+
+These are proposals, not authorization or newly assigned milestone IDs.
+
+1. Architect/owner resolve §12 and approve the reporting contract; execution
+   authorization stays separate.
+2. PQTA-003D-4A implements synthetic-only accounting/metrics and schema
+   validation; Architect approved (synthetic only). Historical orchestration and its
+   boundary tests remain future work. Prove invariants before historical I/O.
+3. Implement read-only pinned runner/immutable publisher with synthetic
+   fixture builds; independent review before any real-history execution.
+4. Only after explicit owner approval: historical Lane A run, independent
+   ledger/metric/provenance audit and deterministic rerun.
+5. Separately approve bounded GitHub summaries, then read-only application
+   integration. No signal or trading milestone is implied.
+
+| File or future extension target | Responsibility and implementation status |
+| --- | --- |
+| `src/quant/research/model_evaluation.py` | Read-only coordinator, chronological paths, sample isolation, existing API adapters; no model formula duplication. |
+| `src/quant/research/forecast_accounting.py` | Implemented synthetic forecast/score records, reasons and conservation. Historical refit-record orchestration remains future work. |
+| `src/quant/research/evaluation_reporting.py` | Implemented pure metrics/intersections and strict evidence-linked schema checks. Immutable file publication and public summary projection remain future work. |
+| `configs/model-evaluation-summary.schema.v1.json` | Optional future standalone schema; not created or required by the current Python validator. |
+| `tests/test_forecast_accounting.py`, `tests/test_evaluation_reporting.py` | Implemented synthetic arithmetic, accounting, set, schema and tamper checks; no historical I/O. |
+| `tests/test_model_evaluation.py` | Future orchestrator/immutable-runner tests; no runner exists yet. |
+| `src/quant/app/server.py`, `web/index.html`, `web/app.js`, `web/style.css`, `tests/test_app_preview.py` | Later read-only summary API/panel and regression isolation; not part of evaluation execution. |
+| `docs/evaluations/`, `README.md`, `docs/ARCHITECTURE.md` | Reviewed aggregate reports and accurate implementation status. |
+
+Required synthetic cases include exact-zero sign matrix, empty sets/no
+forecasts/all unscorable targets, overlapping exclusions, common-set
+equality and digest encoding, every scheduled origin, all candidate
+failures, future-prefix invariance, no current-target access, midnight
+refit failure/stale rejection, malformed/contradictory inputs, missing or
+tampered artifacts, and unchanged source files. The pre-implementation
+regression baseline was 492 tests. Synthetic regression results do not
+establish historical predictive performance.
+
+## 14. PQTA-003D-4A implementation contract
+
+Public accounting interfaces are `OriginUniverse`, `Forecast`, `Outcome`,
+`Quality`, `Score`, `Accounting`, and `account`. Forecast construction has
+no current-target argument. A finite prediction means `emitted`; a null
+prediction requires an approved, method/sample-specific abstention reason.
+The caller supplies already validated model outputs and all applicable
+forecast-time reasons; accounting does not rerun fit/input eligibility or
+prove a supplied prediction came from a particular model. Existing model
+and protocol APIs remain responsible for their training/current-input
+sample rules. `Quality` is copied post-outcome audit metadata, not a new
+predictor or substitute for those forecast-side checks.
+
+Anomaly metadata integrity: flags are actual Booleans; type and affected-field
+tuples are sorted, unique and closed-vocabulary. `Quality` describes row-level
+audit claims (which can concern feature windows, not only target endpoints).
+`target_manifest_anomaly` remains a separate endpoint claim. Missing types,
+fields, record references or manifest evidence are never inferred from
+that flag, nor does a false flag certify an anomaly-free history. Partial
+synthetic fixtures are permitted. `Outcome.anomaly_evidence_status` is
+explicitly `unverified` (default) or `partial`; `verified` and equivalent
+verification claims are rejected. Even populated metadata remains unverified.
+Reports count these statuses under `quality_counts` without altering sample
+masks, target validity or score/exclusion priority. A future evidence verifier
+would need actual versioned manifest references and checked bytes; none is
+introduced here.
+Zero Return must emit exactly zero. Score construction reads outcome audit
+metadata only at/after theoretical closure, preserving the existing three
+score statuses and separate forecast/score exclusion priorities. This
+outcome-bearing interface requires closure even for an abstention; the
+older pure protocol helper still permits target-free abstention
+classification at origin. Valid-but-nonfinite target input fails closed.
+Accounting sorts but never deduplicates or drops scheduled origins.
+
+`metrics`, `timestamp_digest`, `comparison_set`, `Provenance`,
+`ValidationEvidence`, `ReportInputs`, `build_report`, `validate_report`,
+and `validate_report_json` are the reporting APIs. `metrics` is a pure
+arithmetic primitive; the report builder prohibits model-comparison
+records outside test. Full method-own coverage stays separate from metric
+counts on common sets. Every selected comparison has exactly the required
+participants and their exact scored intersection. The validator requires
+the independent accounting/comparison/provenance evidence, not just a
+summary that asserts its own hashes. Unknown/extra/missing fields,
+duplicate JSON keys, tampered types/counts/metrics/digests/statuses and
+contradictory source audits fail closed.
+
+This stage accepts `ValidationEvidence.mode=synthetic` only, with
+`historical_execution_authorized=false`. Evidence gates are explicit
+synthetic assertions, not proof of historical execution authorization,
+source-file authentication, human review or PIT availability. A `complete`
+fixture report means the in-memory accounting/evidence checks passed.
+Missing completion evidence cannot produce a completed nonempty metric
+record. `failed`/`not_run` are reserved reporting states, not invented
+forecast/score statuses or fabricated performance results.
+
+For bounded synthetic fixtures, `OriginUniverse` accepts a predeclared
+half-open window contained in an approved split, including an empty
+window. Report period bounds record that exact fixture window, never
+claim full-split coverage. Future historical integration must enforce the
+full approved requested split windows before claiming completion; no
+new real-data subperiod selection is authorized. Training-history and
+validation accounting appear only in `accounting`, not metric records.
+Candidate diagnostics are supplied as the existing immutable
+`AlphaSelection`; no tuning is run by reporting. Computing Ridge test
+comparison metrics requires a selected alpha and a selection boundary
+no later than the test window start. A missing/unavailable selection
+produces an explicit blocked report; supplied fixture emissions remain
+in accounting but are not certified as valid Ridge outputs. A supplied
+selection with a boundary after the test window is still a temporal
+contract error, not a successful or retuned selection. Identical frozen
+selection metadata is shared by both samples; no retuning occurs.
+
+Provenance validates lowercase digest syntax, version identity and
+separate dataset/source-build/evaluation-spec/evaluation-build IDs.
+Valid 64-character lowercase SHA-256 text is a syntactic identity, not proof
+that any artifact exists or matches that digest. `artifact_bytes_verified`
+is always false in this milestone; constructing or tampering with a true
+claim fails closed. `identity_checks_passed` is a synthetic identity-agreement
+gate, not byte authentication. These distinctions remain visible even in a
+`complete` synthetic fixture report.
+Digest values are independently supplied expected identities: this stage
+does not derive evaluation build IDs, authenticate file bytes or publish
+immutable artifacts. No file or network I/O, model fitting or application
+integration is implemented. Public summary projection and historical
+orchestration remain future separately authorized work.
+
+**Closure: synthetic implementation Architect approved;
+historical execution, publication and UI integration remain blocked.**
+
+Validation after Architect remediation: 158 accounting/reporting synthetic
+tests (26 added to the initial 132); all 650 regression tests passed in
+9.79 seconds with loopback permission for the existing HTTP preview test.
+Ruff lint/format, `pip check`, and whitespace checks passed. No historical
+result is implied.
