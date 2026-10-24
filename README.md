@@ -50,6 +50,8 @@ Silver data. It is not a live trading system.
 | PQTA-003D-5A | Read-only historical adapter and readiness audit | Implemented; Architect review pending | Verifies pinned source/artifact identities and preserves lossless historical features, targets and anomaly associations in memory; no execution bridge or historical fitting. |
 | PQTA-003D-5B | Historical projection policy | Approved Design — Not Implemented | Policy `pqta-003d-5b-projection-v1`: target-endpoint-only Quality and strict fail-closed handling; policy approval alone grants no execution authorization. |
 | PQTA-003D-5C | Historical projection compatibility layer | Implemented; Architect review pending | Source-bound, lossless in-memory compatibility plans and audit; unsupported required fields block the requested scope. No historical evaluation bridge. |
+| PQTA-003D-5D | Unsupported anomaly representation architecture | Approved Design | Separate native metadata vocabulary over the lossless envelope; existing 4A and Strict Fail-Closed v1 contracts unchanged. |
+| PQTA-003D-5E | Native historical anomaly representation | Implemented; Architect Review Pending | Audit-side literal/association preservation, authenticated source binding and versioned native representability audit; no historical execution or scoring interface. |
 | PQTA-003 | ML Training & Evaluation | Synthetic comparator components implemented; historical evaluation pending | The origin ledger is not an approved point-in-time training dataset; historical execution requires separate authorization. |
 | PQTA-004 | Signal Decision Engine | Planned; not operational | Future decision policy; the chart currently reports `NO SIGNAL`. |
 | PQTA-005 | Chart Signal Integration | Planned; not operational | Future chart markers; none are displayed today. |
@@ -77,6 +79,14 @@ now has a separate 5C compatibility implementation in
 bindings separately from synthetic fixtures, retains lossless audit evidence,
 and checks strict 4A representability without connecting history to a model,
 runner or reporting engine. Implementation does not imply execution approval.
+The native module implements the
+[approved 5D representation design](docs/PQTA-003D-5D_UNSUPPORTED_ANOMALY_REPRESENTATION.md)
+as audit-side metadata only; its exact API is documented in the
+[5E implementation contract](docs/PQTA-003D-5E_IMPLEMENTATION_CONTRACT.md).
+Native representability, legacy 4A compatibility,
+source authentication, association resolution, evidence completeness and
+temporal closure are independent dimensions, not one "clean" or executable
+status. Native acceptance does not remove any legacy projection block.
 Approved reporting boundaries are: training-history accounting only;
 Ridge validation candidate tuning diagnostics only; test comparisons use
 a frozen alpha. Research metrics are not trading confidence.
@@ -105,6 +115,7 @@ flowchart LR
     manifest --> historicalaudit
     origins --> historicalaudit
     historicalaudit --> projection["PQTA-003D-5C in-memory projection compatibility; no execution bridge"]
+    projection -->|"source binding; no row filtering"| nativeaudit["PQTA-003D-5E native metadata audit; no forecast or scoring API"]
     baselines["PQTA-003D-2 synthetic baseline components; no historical execution"]
     ridge["PQTA-003D-3 synthetic Ridge comparator; no historical execution"]
     accounting["PQTA-003D-4A synthetic accounting/reporting; no historical execution"]
@@ -182,6 +193,7 @@ installation; unpinned package versions can change on a future install.
 | Statistical baselines | Python standard library, `math.fsum` | Existing Python runtime; no added package | Zero Return, Mean, and AR(1) | Implemented and tested on synthetic inputs only |
 | Synthetic coordination | Python standard library | Python 3.12.15; no new dependency | Closure/admission events, existing model calls, daily state, accounting and report validation | PQTA-003D-4B implemented; synthetic-only, Architect review pending |
 | Historical compatibility | Python standard library and existing Polars | Existing declared runtime/dependencies; no added package | Authenticated source binding, closure-gated projection plans and canonical in-memory compatibility audit | PQTA-003D-5C implemented; Architect review pending, no execution bridge |
+| Native historical representation | Python standard library and existing source/manifest contracts | Python 3.12.15; no added package | Lossless literal/occurrence retention, source-linked identities and independent native audit dimensions | PQTA-003D-5E implemented; Architect Review Pending, audit-side only |
 | Future interface proposal | Streamlit | Not declared or installed in `pqta` | Earlier dashboard proposal | **Planned only; current chart does not use it** |
 
 The Python declarations are in [pyproject.toml](pyproject.toml); the chart
@@ -216,6 +228,12 @@ run the current chart.
   unresolved associations and unknown anomaly types fail closed. A blocked
   required row blocks the declared scope, not a conveniently reduced universe.
   All readiness, PIT and decision-eligibility flags remain false.
+- **Native anomaly metadata:** PQTA-003D-5E retains the existing lossless
+  envelope, literal `candle`/`unknown`, separate endpoint/window/unresolved
+  roles, original occurrence positions, duplicates, nulls and reason order.
+  Source and full manifest references remain attached only to audit-side
+  contexts and closed envelopes, never forecast-only plans. Unknown or
+  contradictory semantic linkage remains explicit, not guessed or repaired.
 - **Quality evidence:** coverage reports distinguish verified gaps from
   unknown coverage; the versioned candidate anomaly manifest remains separate
   from Silver and does not repair OHLCV values.
@@ -258,6 +276,17 @@ into 4A `Quality`/`Outcome` is deferred pending reviewed field/association
 policy and separate execution authorization. Source-byte authentication does
 not authenticate the manifest's referenced anomaly evidence or establish PIT
 availability; the synthetic runner's availability remains caller-attested.
+
+The native representation reuses the source-bound receipt verifier rather
+than trusting caller flags or plausible hashes. Its schema is
+`pqta-historical-anomaly-representation-v1`, policy is
+`pqta-003d-5d-representation-v1`, and serializer is
+`pqta-003d-5e-canonical-v1`. Canonical UTF-8 JSON preserves source-array order,
+duplicates, absent versus null fields and signed zero; it rejects NaN and
+infinity. Separate `representation_spec_id`, `representation_build_id` and
+`payload_sha256` identify logical source/scope policy, implementation build
+and canonical payload bytes. Existing source IDs, the 5C serializer and
+comparison timestamp digests are unchanged. No representation file is written.
 
 ## Application Workflow
 
@@ -387,6 +416,15 @@ the sandboxed attempt had 815 passes and one socket-permission failure.
 The read-only compatibility audit retained 50,845 origins: 49,692 compatible,
 1,152 blocked and one audit-only. These are representation counts, not model
 results or permission to execute a reduced historical evaluation.
+PQTA-003D-5E adds synthetic verification of native representation, source
+binding, closure non-access and canonical identities. Acceptance passed **112
+new tests and the full 928-test suite**, plus Ruff lint/format and dependency
+checks. A read-only full-origin scan found 50,844 natively represented origins
+and one uninspected audit-only origin; the independent legacy counts above
+remain unchanged. A separate 39-origin canonical anchor audit repeated
+byte-for-byte. These are metadata findings, not model results or execution
+approval; [method and limitations](docs/MODEL_EVALUATION.md#read-only-acceptance-findings)
+include the initial bounded-audit timeout.
 Tests use synthetic data and local fixtures; the HTTP test
 binds a temporary localhost
 port. The prior QNT-002B CI run passed its then-current 84-test suite; it did
@@ -426,6 +464,13 @@ files were not regenerated by the environment verification.
   verification does not verify anomaly evidence or historical publication.
   Historical execution/reporting remain unauthorized, PIT unverified and
   decision eligibility false; no generated compatibility files are written.
+- PQTA-003D-5E represents historical anomaly metadata; it is not an executable
+  historical `Outcome`, scorer, forecast API or reporting bridge. Native
+  representability does not establish legacy 4A compatibility, anomaly-evidence
+  verification, numeric/model eligibility or PIT availability. Raw unresolved
+  associations stay unresolved. Historical scoring/accounting/reporting still
+  require separately reviewed interfaces and explicit execution authorization;
+  `execution_ready`, `point_in_time_verified` and `decision_eligible` stay false.
 
 ## Development Roadmap
 

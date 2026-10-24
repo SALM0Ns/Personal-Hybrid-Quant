@@ -38,6 +38,7 @@ require review rather than a silent implementation choice.
 | `model_evaluation.py` | PQTA-003D-4B synthetic-only chronological coordinator implemented; Architect review pending. No historical reader or publisher. |
 | `historical_adapter.py` | PQTA-003D-5A read-only pinned-source and lossless historical audit implemented; Architect review pending. No projection into 4A or execution bridge. |
 | `historical_projection.py` | PQTA-003D-5C strict read-only compatibility layer implemented; Architect review pending. Source-bound in-memory plans/audit only, not a historical runner or reporting bridge. |
+| `historical_representation.py` | PQTA-003D-5E native audit-side representation implemented; Architect Review Pending. Reuses source receipts and the lossless envelope; no native forecast/scoring API or historical evaluation. |
 | Historical orchestration and published forecast/score/refit ledgers | Designed, unimplemented. |
 | Application | Read-only historical Silver chart, `NO SIGNAL`; no model evaluation view. |
 
@@ -67,7 +68,8 @@ dataset/build identities, schema, UTC keys, versions and split assignments
 before use. It would consume the existing ledger and pinned validated
 Silver, never exchange APIs. That reader is not implemented by 4B. The
 separate 5A adapter described in §16 performs source/readiness inspection;
-5C (§17) checks strict projection compatibility. Neither connects history to
+5C (§17) checks strict projection compatibility, and 5E (§18) adds a separate
+native metadata representation audit. None connects history to
 this execution flow.
 AR's exact source-close observations must come from pinned Silver, not a
 new return definition or row-shift approximation. Source validity and
@@ -980,3 +982,260 @@ origin-artifact hashes and canonical manifest digest remained unchanged, as
 did the three pre-existing QNT-003 header edits. No dependency, existing
 research contract, model implementation, synthetic runner or reporting-engine
 change was needed.
+
+## 18. PQTA-003D-5E native historical anomaly representation
+
+**Status: Implemented; Architect Review Pending.** Implementation and testing
+were separately authorized after the
+[approved 5D design](PQTA-003D-5D_UNSUPPORTED_ANOMALY_REPRESENTATION.md).
+The approved design document and ADR-5D-01–06 remain unchanged. Exact Phase A
+schema, API, canonicalization and acceptance decisions are in the
+[5E implementation contract](PQTA-003D-5E_IMPLEMENTATION_CONTRACT.md).
+This authorization covers native representation and read-only auditing,
+not historical execution, forecasting, scoring or result publication.
+
+### Public boundary and authoritative source
+
+`historical_representation.py` reuses existing `HistoricalRecord`,
+`HistoricalOutcome` and `HistoricalAnomaly` objects rather than cloning 4A
+Quality or the historical adapter. `NativeOccurrence` retains original raw
+annotation content, source/manifest references, collection, association role,
+original position and linkage findings. `NativeEnvelope` retains that existing
+lossless record and its occurrences. `NativeResult` and `NativeAudit` describe
+representation findings, not predictions, scores or evaluation-status records.
+
+The public source factories are `verify_pinned_representation_source(root)`
+and `bind_synthetic_representation(adapter, *, manifest_bytes=None)`.
+`represent_closed(source, origin, *, checked_at, policy=...)` inspects a
+closed audit row; `audit_native(source, *, checked_at, origins=None, policy=...)`
+conserves the declared scope and returns canonical audit bytes in memory.
+There is no writer, historical runner, model call, native forecast API,
+label-admission API, executable scorer or dashboard route.
+
+Schema `pqta-historical-anomaly-representation-v1` and policy
+`pqta-003d-5d-representation-v1` have exactly the existing manifest's seven
+literal field tokens: `open`, `high`, `low`, `close`, `volume`, `candle`,
+`unknown`. `missing_hour` requires `candle`; the existing discrepancy and
+shortened-close types permit OHLCV/`unknown`. Original nulls, numeric values,
+reason order, array order and duplicate occurrences are retained. Endpoint,
+feature-window and unresolved collections stay separate. `candle` is not
+expanded to five field claims, and `unknown` is not interpreted as numeric
+null, missingness, an unresolved role or a universal mask.
+
+Unknown future types/tokens remain opaque raw evidence while native semantic
+representability is blocked; they do not enlarge v1's vocabulary. Invalid
+known type/token combinations fail validation. Annotation/manifest matches
+require an exact unique timestamp/type identity plus consistent supplied
+field, review, severity and evidence-reference content. Missing or ambiguous
+links block interpretation, and contradictions remain explicit. No positional
+fallback, fabricated detail, token expansion or evidence-status promotion is
+permitted. Unresolved associations can be retained natively without resolving
+their model/scoring meaning.
+
+### Six independent audit dimensions
+
+| Dimension | What the native audit reports | What it does not establish |
+| --- | --- | --- |
+| Native representability | `represented`, `blocked`, `failed`, `not_inspected` under the named native schema/policy. | Legacy 4A compatibility or model/sample eligibility. |
+| Legacy 4A compatibility | Existing unchanged 5C classification for the same source-bound origin. | Native acceptance, a new model abstention or permission to drop blocked rows. |
+| Source authentication | Factory-issued pinned-history versus synthetic-fixture source binding. | Referenced anomaly-evidence verification or historical publication. |
+| Association resolution | `resolved`, `unresolved`, `not_inspected`, separately from literal field attribution. | Guessed endpoint/window roles or a root cause. |
+| Evidence completeness | Recorded references unverified, unresolved linkage, no occurrences or not inspected. | Independently verified archive/REST evidence or anomaly-free history. |
+| Temporal closure | `closed` or `not_closed` from exact clocks. | Publication time, PIT availability or decision eligibility. |
+
+Counts are derived for every requested origin on each dimension. The 5C
+reference counts in §17 remain legacy findings, never hardcoded native output
+or a reason to exclude 1,152 origins from a future evaluation universe. A
+positive native result does not make an evaluation `complete`. Readiness/PIT/
+decision flags remain false for the scope and its results.
+
+### Receipt reuse and temporal isolation
+
+The pinned native factory reuses `historical_projection.verify_pinned_source`
+and its exact source-bound receipt. Native contexts additionally retain strict
+raw manifest bytes/identity and per-record binding. Manual/copied receipts,
+reconstructed contexts, plausible SHA-256 text and caller verification flags
+cannot establish historical authentication. The separate synthetic factory
+never upgrades its source mode. The boundary protects in-process consistency,
+not hostile Python introspection or signature verification. The observed raw
+manifest hash is bound separately; it is not relabeled as a previously pinned
+raw hash in the legacy receipt.
+
+`represent_closed` validates source/clock/key identity before any outcome
+inspection. If `origin+1h > checked_at`, there is no envelope, full-row digest
+traversal, target value/validity/endpoint flag read or outcome-derived anomaly
+diagnostic. Out-of-split rows remain audit-only with no envelope; their
+independent closure axis still reports the clock, including the final origin
+that closes after the pinned analysis boundary. Existing forecast-only plans
+are unchanged: no source context, full manifest, native attachment, outcome
+resolver or current/future target information is exposed through them.
+
+### Canonical schema and three identity levels
+
+Serializer `pqta-003d-5e-canonical-v1` is separate from unchanged 5C
+`pqta-003d-5c-canonical-v1` and comparison timestamp encoding. It uses UTF-8
+JSON with sorted object keys, compact separators, one final LF and aware
+zero-offset timestamps encoded with six fractional digits and `Z`. Original
+raw timestamp strings remain strings. Binary64 values use finite round-trip
+JSON numbers, preserving `-0.0`; integers are not coerced to floats. Missing
+keys remain distinct from explicit null. Array order and duplicate occurrence
+positions are preserved. NaN, infinity, duplicate JSON keys and unknown schema,
+policy or serializer versions fail closed.
+
+| Identity | Inputs and separation |
+| --- | --- |
+| `representation_spec_id` | Logical source dataset/build identity, source byte references, manifest reference, schema/policy/protocol contracts, fixed scope/closure boundary and preservation rules. No implementation revision or runtime clock. |
+| `representation_build_id` | Spec ID, relevant code-content hash, exact dependency versions and serializer/configuration. Code-content-only changes under unchanged approved spec encoding affect build identity, not an unchanged logical specification. |
+| `payload_sha256` | Canonical audit object bytes with its own digest field omitted; the returned report includes that field. Not an existing dataset/build or comparison identity. |
+
+No source identity, existing serializer or comparison digest is overwritten.
+No representation artifact is published. `canonical_payload` and the identity
+helpers validate serialization/specification inputs; accepting a well-formed
+digest never authenticates source bytes by itself. Processing time is not
+historical availability, and no runtime timestamp enters logical identity.
+Deterministic repeats under one representation build are allowed; conflicting
+payloads under the same build ID fail closed within the current process.
+This is not persisted/cross-process immutable-artifact verification. A future
+publisher and historical reporting interface remain separately deferred.
+
+Identity invariance is conditional on fixed logical inputs and the unchanged
+approved canonical-spec encoding. There is no automatically sampled runtime
+clock in the spec. The explicit `checked_at` cutoff is part of the declared
+scope, so changing it intentionally changes spec/build/payload identities.
+Changing source byte references (including raw-manifest bytes/hash) changes
+their logical specification; changed canonical payload bytes change its SHA-256.
+Changed bytes at an approved pinned source fail authentication rather than
+silently authorizing a new historical source; identity helpers provide no such
+authorization.
+Code-only changes that preserve the logical inputs and approved encoding change
+the build rather than the logical spec. The serializer-version test changes
+the build helper's declared version input; it does not execute another codec.
+Actual audit policies reject unapproved serializer versions. A future codec
+migration remains reviewed/versioned and is not guaranteed to preserve spec bytes.
+
+### Read-only acceptance findings
+
+The final 112 synthetic representation tests passed in 2.03 seconds, including
+literal/type restrictions, roles/order/multiplicity, missing/null/signed zero,
+full-manifest linkage contradictions, copied/forged contexts, closure non-access,
+independent legacy/native classifications and conflicting-build rejection.
+The complete suite passed **928 tests in 15.31 seconds**, with no failures,
+skips or collection errors. All 816 existing tests are included. The earlier
+restricted existing-test run had 815 passes and one localhost socket-binding
+permission failure; the final full run used loopback permission without
+altering tests. Ruff lint, Ruff format (80 files), `pip check`, documentation
+and Git whitespace checks passed. Pip warned that its cache was disabled;
+it reported no broken requirements. No dependency was installed or changed.
+
+At fixed `checked_at=2026-10-20T13:00:00Z`, the approved pinned source factory
+authenticated the original bytes and bound the observed raw manifest. A
+complete, read-only **per-origin native scan** then retained all 50,845 origin
+identities exactly once:
+
+| Independent dimension | Actual findings |
+| --- | --- |
+| Native representability | `represented=50,844`; `not_inspected=1`; `blocked=0`; `failed=0`. |
+| Legacy 4A compatibility | `compatible=49,692`; `blocked=1,152`; `audit_only=1`; `failed=0`; `not_closed=0`. |
+| Source authentication | `authenticated_pinned_history=50,845`. |
+| Association resolution | `resolved=50,844`; `not_inspected=1`; no unresolved source roles observed. |
+| Evidence completeness | `no_occurrences=49,692`; `recorded_references_unverified=1,152`; `not_inspected=1`. |
+| Temporal closure | `closed=50,844`; `not_closed=1`. |
+
+Each dimension conserves the full scope independently. These are actual
+metadata observations, not hardcoded native output or predictive results.
+
+**Evidence counting unit:** `recorded_references_unverified=1,152` means
+**1,152 distinct source-bound origins**, not anomaly occurrences, manifest
+records, evidence references or evidence files. `audit_native` first rejects
+duplicate/unbound origins, builds one `NativeResult` per origin, then counts
+one value of each dimension per result. After successful core validation,
+`represent_closed` aggregates that origin's endpoint/window/unresolved
+occurrences before assigning one evidence category: no occurrences gives
+`no_occurrences`; any unmatched linkage gives
+`unresolved_linkage`; all nonempty occurrences matched gives
+`recorded_references_unverified`. Repeated occurrences do not increase this
+origin count. `no_occurrences` does not certify universally clean source data.
+
+The numerical equality with `legacy blocked=1,152` is a finding of this pinned
+snapshot only, not a coded relationship, proof of identical sets or a general
+invariant. The two dimensions are computed independently. Supported OHLCV
+anomalies can be legacy-compatible while their recorded references remain
+unverified, as the seven-token synthetic tests demonstrate. Source-byte
+authentication does not verify any referenced anomaly-evidence bytes.
+
+The final origin at 13:00 is outside the half-open Test split and its target
+closes at 14:00. It has no native envelope or outcome inspection at this cutoff.
+Legacy `audit_only` precedence therefore coexists honestly with native
+`temporal_closure=not_closed`; no split boundary or v1 count changed.
+`resolved` refers to source-column association roles, not anomaly root causes
+or independently verified evidence. All readiness/PIT/decision flags and
+`anomaly_evidence_verified` remained false.
+
+For that exact final origin, status fields at the historical cutoff are:
+
+| Field | Value at checked-at `2026-10-20T13:00:00Z` | Meaning |
+| --- | --- | --- |
+| `period` | `outside_approved_evaluation_window` | The Test end is exclusive; do not admit the origin. |
+| `native_representability` | `not_inspected` | No row-level native-schema outcome assessment, not `failed` or unsupported. |
+| `legacy_4a_compatibility` | `audit_only` | Unchanged legacy out-of-split precedence. |
+| `source_authentication` | `authenticated_pinned_history` | Registered source-byte authentication remains independent of outcome inspection. |
+| `temporal_closure` | `not_closed` | The theoretical target close is `2026-10-20T14:00:00Z`. |
+| `association_resolution` / `evidence_completeness` | `not_inspected` / `not_inspected` | No endpoint/occurrence evidence diagnostics are derived. |
+| `envelope` / `findings` | null / `["audit_only"]` | No target, validity, anomaly flags, attachment or resolver. |
+
+The branch checks **outside-split OR not-closed** before a full-row digest or
+outcome read. At checked-at 14:00, `temporal_closure` becomes `closed`, but the
+origin remains `audit_only` / `not_inspected`, with null envelope and unchanged
+audit-only findings. Clock closure does not move it into Test or trigger outcome
+inspection. Schema support and source authentication are not reclassified as
+failures. Source authentication is a separate offline-verification boundary;
+this no-outcome-access claim concerns the temporal inspection/forecast APIs,
+not a claim that source authentication never reads the historical artifact.
+
+Canonical payload verification used a **separate bounded 39-origin scope**:
+the first/last two source origins plus bound origins at each manifest anomaly
+timestamp and one/two hours later, deduplicated and sorted. Two `audit_native`
+calls, including reversed input order, produced identical canonical bytes.
+The following identities belong to that anchor scope, not a published
+full-history representation artifact or an evaluation build:
+
+| Anchor identity | Value |
+| --- | --- |
+| `representation_spec_id` | `436bec6c7b6d4985daf900347e08199c92d0ca4b52842043841c6f1d24ae7777` |
+| `representation_build_id` | `174c74ae91fa41936a3ad0cf342ba15152e24ba248f818d1feda6e297fd132d1` |
+| `payload_sha256` | `5def9a224bfea5331cd8c08e50b71308f2e188994db2e5cfc0587b27a72c9ba8` |
+| Code-content SHA-256 | `65d6a4017651d772dee8a3a646a84ad628baad2e7cb6566157888aac2d934b38` |
+
+The successful full scan plus anchor verification took 175.84 seconds. An
+earlier full-payload batched attempt reached its 300-second limit after 40,000
+origins; it was incomplete and is not the source of the full-scope counts.
+The final scan avoided repeated full-row batch serialization. No full-history
+canonical artifact was generated, written or published. The verifier's model,
+scoring, network and dataset-write entry points were guarded to fail if called.
+
+All 25 protected dataset hashes, four immutable origin files, source-build
+identity and canonical manifest digest remained unchanged. Canonical/raw
+manifest SHA-256 was
+`86a1a76bed96416aba580d8e4468e1e406d8a36a33b68b4c9d6a6ad2a1d2f6f4`.
+The approved 5D design and three pre-existing QNT-003 header edits were untouched.
+Only new source/tests/implementation-contract documentation and these directly
+affected documentation files were changed; no existing runtime contract changed.
+
+### Environment and remaining gates
+
+The verified development environment is native arm64
+Python 3.12.15, Polars 2.0.0, DuckDB 1.5.6, CCXT 4.5.89, Pandera 0.34.1,
+pytest 9.1.1 and Ruff 0.17.1. This implementation adds no dependencies.
+
+4A contracts, the synthetic runner/reporting guards, 5B/5C compatibility
+semantics, numerical models, sample masks, refit/alpha rules and temporal
+closure are unchanged. Matching source bytes does not independently verify
+anomaly evidence or resolve root causes; historical `available_at` stays null.
+Native historical scoring/accounting/reporting remains deferred under
+ADR-5D-06 and requires a separately reviewed interface. Historical execution
+requires explicit owner authorization after blockers are resolved. Lane B,
+backtesting and trading remain blocked; the chart stays `NO SIGNAL`.
+`execution_ready=false`, `point_in_time_verified=false` and
+`decision_eligible=false` remain mandatory. Synthetic/read-only representation
+validation establishes no predictive accuracy, profitability or live-trading
+evidence.

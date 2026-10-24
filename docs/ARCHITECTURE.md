@@ -447,6 +447,74 @@ integration. Historical execution needs separate authorization; reporting is
 deferred pending its own reviewed interface. Run the synthetic compatibility
 tests in `pqta` with `python -m pytest -q tests/test_historical_projection.py`.
 
+## PQTA-003D-5E native historical anomaly representation — audit-side only
+
+Status: **Implemented; Architect Review Pending.**
+`src/quant/research/historical_representation.py` implements the separately
+approved [5D design](PQTA-003D-5D_UNSUPPORTED_ANOMALY_REPRESENTATION.md),
+without changing ADR-5D-01–06, 4A Quality/Outcome/Score, the 5B/5C policy,
+models or the synthetic runner. Exact interfaces and canonical schema are
+recorded in the [5E implementation contract](PQTA-003D-5E_IMPLEMENTATION_CONTRACT.md).
+The approved 5D document remains the design milestone's historical record;
+5E's separate implementation authority does not authorize execution.
+
+The native schema `pqta-historical-anomaly-representation-v1` and policy
+`pqta-003d-5d-representation-v1` reuse the existing lossless historical
+envelope. Typed occurrences retain raw values, original field tokens,
+source column, endpoint/window/unresolved association, original collection
+positions and multiplicity. The seven literals are `open`, `high`, `low`,
+`close`, `volume`, `candle` and `unknown`, with the existing manifest's
+type/token restrictions. Neither `candle` nor `unknown` is expanded into
+OHLCV, numeric missingness, generic eligibility or an inferred association.
+Unknown semantic vocabulary is retained as opaque audit evidence, not
+silently accepted under v1. Missing, ambiguous or contradictory linkage is
+reported explicitly rather than enriched from a plausible timestamp.
+
+`verify_pinned_representation_source` reuses the approved source-bound
+receipt verifier and binds exact raw manifest references. The separate
+synthetic factory cannot authenticate historical bytes. Copied receipts,
+reconstructed contexts or caller-supplied Booleans/hash strings do not mint
+that binding. This is an in-process integrity boundary, not a signature or
+hostile-Python sandbox. Matching manifest/source bytes authenticates the
+recorded claim, not external anomaly evidence or publication availability.
+
+`represent_closed` and `audit_native` are audit-side only. Before theoretical
+target closure, they do not inspect current/future outcome values, flags,
+attachments or anomaly diagnostics. The final out-of-split origin remains
+audit-only; its separate closure dimension is not hidden by that label.
+No native envelope, source context, manifest or outcome resolver is added
+to forecast-only plans. No model, fit, forecast, scoring or historical
+evaluation interface is introduced.
+
+Each audit reports independent native representability, legacy 4A
+compatibility, source authentication, association resolution, evidence
+completeness and temporal closure. The unchanged 5C compatibility result
+is a separate target-schema result, not a native acceptance threshold.
+Representable raw unresolved associations may still block any interpretation
+requiring a definite dependency role. All requested origins remain counted.
+
+Serializer `pqta-003d-5e-canonical-v1` uses compact sorted-key UTF-8 JSON
+ending in one LF, six-digit UTC `Z` timestamps, finite round-trip binary64
+numbers and preserved `-0.0`, original arrays, nulls and absent fields. New
+`representation_spec_id`, `representation_build_id` and `payload_sha256`
+separate logical source/scope policy, code/dependency/serializer build and
+canonical bytes. Runtime timestamps do not enter logical identity. Existing
+dataset/build IDs, 5C serialization and comparison digests remain unchanged.
+The audit returns canonical bytes in memory and writes no artifact.
+
+Historical scoring/accounting/reporting remain deferred under ADR-5D-06,
+and historical execution needs separate owner authorization. Native audit
+acceptance is not model eligibility, historical evaluation completion or
+live-trading evidence. `execution_ready=false`, `point_in_time_verified=false`
+and `decision_eligible=false` remain mandatory. Acceptance passed 112 new
+synthetic tests and the full 928-test regression, lint/format, dependency and
+protected-integrity checks. A read-only full-origin scan retained all 50,845
+origins (50,844 native representations and one uninspected audit-only origin);
+39 canonical anchor origins were independently repeated byte-for-byte. The
+[acceptance findings](MODEL_EVALUATION.md#read-only-acceptance-findings) distinguish
+the complete semantic scan from bounded canonical payload verification and
+the initial incomplete time-bounded attempt. No evaluation artifact was written.
+
 ## Data boundaries
 
 - Data moves forward through layers; downstream outputs must be reproducible
