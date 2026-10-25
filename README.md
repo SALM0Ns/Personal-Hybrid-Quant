@@ -52,6 +52,7 @@ Silver data. It is not a live trading system.
 | PQTA-003D-5C | Historical projection compatibility layer | Implemented; Architect review pending | Source-bound, lossless in-memory compatibility plans and audit; unsupported required fields block the requested scope. No historical evaluation bridge. |
 | PQTA-003D-5D | Unsupported anomaly representation architecture | Approved Design | Separate native metadata vocabulary over the lossless envelope; existing 4A and Strict Fail-Closed v1 contracts unchanged. |
 | PQTA-003D-5E | Native historical anomaly representation | Implemented; Architect Review Pending | Audit-side literal/association preservation, authenticated source binding and versioned native representability audit; no historical execution or scoring interface. |
+| PQTA-003D-6A | Native scoring/accounting types and validation | Implemented; awaiting Architect review | Immutable data-only records, strict validators, canonical serialization, and non-authoritative identities; no historical execution, scoring kernel, reconciliation kernel, or capability issuer. |
 | PQTA-003 | ML Training & Evaluation | Synthetic comparator components implemented; historical evaluation pending | The origin ledger is not an approved point-in-time training dataset; historical execution requires separate authorization. |
 | PQTA-004 | Signal Decision Engine | Planned; not operational | Future decision policy; the chart currently reports `NO SIGNAL`. |
 | PQTA-005 | Chart Signal Integration | Planned; not operational | Future chart markers; none are displayed today. |

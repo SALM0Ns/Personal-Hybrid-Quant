@@ -515,6 +515,24 @@ origins (50,844 native representations and one uninspected audit-only origin);
 the complete semantic scan from bounded canonical payload verification and
 the initial incomplete time-bounded attempt. No evaluation artifact was written.
 
+## PQTA-003D-6A native scoring/accounting contract — data only
+
+Status: **PQTA-003D-6A — IMPLEMENTED, AWAITING ARCHITECT REVIEW.**
+
+The [Stage A implementation note](PQTA-003D-6A_NATIVE_TYPES_VALIDATION.md)
+documents immutable native record schemas, strict parent/child validation and
+canonical data-only serialization. The logical `scoring_spec_id` excludes its
+stored digest and all runtime/build/result fields. `ScoreClassification` binds
+to the exact `HistoricalForecast.forecast_id`, so changing a forecast's value,
+abstention reasons, producer trace or build identity creates a different
+parent identity.
+
+This layer does not classify a historical outcome, reconcile an execution,
+authenticate a producer, issue a closed-outcome capability, or assert completed
+historical accounting. Digest validation establishes deterministic data
+integrity only. Stage B, historical execution, metrics, reporting, signals and
+trading remain unauthorized.
+
 ## Data boundaries
 
 - Data moves forward through layers; downstream outputs must be reproducible
