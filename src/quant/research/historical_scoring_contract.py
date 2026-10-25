@@ -340,8 +340,6 @@ class HistoricalProvenanceRef:
         )
         for field in digest_fields:
             _digest(getattr(self, field), field)
-        if len({getattr(self, field) for field in digest_fields}) != len(digest_fields):
-            raise ValueError("provenance digest roles must be distinct")
         if (
             self.protocol_version != PROTOCOL_VERSION
             or self.dataset_contract_version != DATASET_CONTRACT_VERSION

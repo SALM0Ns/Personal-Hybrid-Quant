@@ -731,9 +731,56 @@ def test_parent_child_source_identity_mismatch_is_rejected() -> None:
         _scope(provenance=provenance, origin=origin)
 
 
-def test_duplicate_provenance_digest_roles_are_rejected() -> None:
-    with pytest.raises(ValueError, match="digest roles must be distinct"):
-        _provenance(gold_sha256=_hash("silver"))
+def test_distinct_provenance_roles_may_have_identical_digests() -> None:
+    provenance = _provenance(manifest_raw_sha256=_hash("manifest-canonical"))
+    contract.validate_provenance(provenance)
+    assert provenance.manifest_raw_sha256 == provenance.manifest_canonical_sha256
+    scope = _scope(provenance=provenance)
+    assert scoring_spec_id(scope) == scoring_spec_id(replace(scope))
+    assert canonical_json(provenance) == canonical_json(replace(provenance))
+    assert not provenance.historical_source_authenticated
+
+
+def test_distinct_provenance_roles_may_have_different_digests() -> None:
+    provenance = _provenance()
+    contract.validate_provenance(provenance)
+    assert provenance.manifest_raw_sha256 != provenance.manifest_canonical_sha256
+
+
+def test_duplicate_provenance_role_names_are_rejected() -> None:
+    with pytest.raises(ValueError, match="duplicate"):
+        canonical_loads(
+            b'{"manifest_raw_sha256":"'
+            + _hash("first").encode()
+            + b'","manifest_raw_sha256":"'
+            + _hash("second").encode()
+            + b'"}\n'
+        )
+
+
+def test_missing_required_provenance_role_is_rejected() -> None:
+    values = {
+        name: getattr(_provenance(), name)
+        for name in HistoricalProvenanceRef.__dataclass_fields__
+        if name != "manifest_raw_sha256"
+    }
+    with pytest.raises(ValueError, match="record fields"):
+        record_from_mapping(HistoricalProvenanceRef, values)
+
+
+@pytest.mark.parametrize("digest", ["invalid", "A" * 64, "0" * 63, None])
+def test_invalid_provenance_digest_format_is_rejected(digest) -> None:
+    with pytest.raises(ValueError, match="invalid lowercase manifest_raw_sha256"):
+        _provenance(manifest_raw_sha256=digest)
+
+
+def test_caller_digest_does_not_authenticate_source_bytes() -> None:
+    provenance = _provenance(
+        source_mode="authenticated_pinned_history", manifest_raw_sha256=_hash("wrong")
+    )
+    assert provenance.manifest_raw_sha256 != hashlib.sha256(b"actual bytes").hexdigest()
+    assert not provenance.historical_source_authenticated
+    assert public_authority_issuers() == ()
 
 
 def test_exact_source_ledger_identity_set_is_required() -> None:

@@ -55,6 +55,7 @@ Silver data. It is not a live trading system.
 | PQTA-003D-6A | Native scoring/accounting types and validation | Implemented; awaiting Architect review | Immutable data-only records, strict validators, canonical serialization, and non-authoritative identities; no historical execution, scoring kernel, reconciliation kernel, or capability issuer. |
 | PQTA-003D-6B | Synthetic native scoring kernel | Implemented; awaiting Architect review | Pure classification of supplied closed synthetic forecast/outcome pairs; exact parent binding and existing sample/reason rules; no historical execution or authority issuance. |
 | PQTA-003D-6C | Synthetic native accounting kernel | Implemented; awaiting Architect review | Exact synthetic origin-set reconciliation, counts, reasons, coverage and scored-set identities over supplied forecasts/classifications; no historical completion or metrics. |
+| PQTA-003D-6D | Historical source and closed-outcome authority | Implemented; awaiting Architect review | Read-only pinned-source verification, exact ledger membership and process-local post-closure inspection capability; no historical forecasting, scoring or accounting completion. |
 | PQTA-003 | ML Training & Evaluation | Synthetic comparator components implemented; historical evaluation pending | The origin ledger is not an approved point-in-time training dataset; historical execution requires separate authorization. |
 | PQTA-004 | Signal Decision Engine | Planned; not operational | Future decision policy; the chart currently reports `NO SIGNAL`. |
 | PQTA-005 | Chart Signal Integration | Planned; not operational | Future chart markers; none are displayed today. |
@@ -90,6 +91,11 @@ Native representability, legacy 4A compatibility,
 source authentication, association resolution, evidence completeness and
 temporal closure are independent dimensions, not one "clean" or executable
 status. Native acceptance does not remove any legacy projection block.
+The [6D authority boundary](docs/PQTA-003D-6D_HISTORICAL_AUTHORITY.md) adds
+explicit inspection of exact theoretically closed historical outcomes using
+verified source bytes and a process-local capability. It does not authenticate
+model execution, resolve publication availability, issue historical scores,
+or authorize historical evaluation, backtesting or trading.
 Approved reporting boundaries are: training-history accounting only;
 Ridge validation candidate tuning diagnostics only; test comparisons use
 a frozen alpha. Research metrics are not trading confidence.

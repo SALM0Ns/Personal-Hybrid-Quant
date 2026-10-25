@@ -576,6 +576,37 @@ accounting entry point has no outcome reader, clock, file/network access,
 model call, metric calculation or writer. Stages D–F and historical completion,
 execution, reporting, dashboards, signals and trading require separate approval.
 
+## PQTA-003D-6D historical source and closed-outcome authority
+
+Status: **PQTA-003D-6D — IMPLEMENTED, AWAITING ARCHITECT REVIEW.**
+
+[`historical_authority.py`](../src/quant/research/historical_authority.py)
+reuses the 5A pinned reader, 5C receipt/row binding and 5E native manifest
+representation. An opaque verified context exposes exact ledger-derived
+origin identities; scope validation retains invalid, missing-hour and anomalous
+origins while keeping audit-only identities separate. Source, scope, identity
+and theoretical closure are checked before outcome access at the capability
+interface. Source verification itself remains an audit-side read of the pinned
+historical artifacts, not a forecast-input interface.
+
+The [6D implementation note](PQTA-003D-6D_HISTORICAL_AUTHORITY.md) documents
+registered, frozen process-local outcome capabilities, explicit read-only
+inspection, untrusted descriptors and context invalidation. Native literal
+`candle`/`unknown`, associations, positions and multiplicity remain intact;
+unresolved required linkage fails closed without becoming a model abstention.
+Source authentication, anomaly-evidence verification and publication
+availability remain independent. The narrow Stage A correction permits equal
+valid digests in distinct provenance roles without weakening byte verification
+or changing canonical identities.
+
+The receipt authenticates the snapshot read, not future disk state. Registries
+provide no persistent/cross-process guarantee or protection against hostile
+Python code. Existing data-only authority properties remain false. This layer
+does not grant producer/execution authority, historical score issuance,
+accounting completion, metrics, reporting, dashboard or trading functionality.
+Stage E/F and historical execution remain separately unauthorized; Gold
+availability and decision eligibility are unchanged.
+
 ## Data boundaries
 
 - Data moves forward through layers; downstream outputs must be reproducible
