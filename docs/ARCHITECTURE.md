@@ -552,8 +552,29 @@ immutable outcome, including literal `candle`/`unknown`, raw values, positions
 and multiplicity. The returned `ScoreClassification` has fixed false
 authentication, historical-completion, PIT and decision-eligibility properties.
 This callable has no source resolver, live clock, model runner or writer.
-Stages C–F, historical scoring, accounting completion, metrics, reporting,
-dashboards, signals and trading require separate authorization.
+The 6B milestone did not authorize Stages C–F, historical scoring, accounting
+completion, metrics, reporting, dashboards, signals or trading.
+
+## PQTA-003D-6C synthetic native accounting kernel
+
+Status: **PQTA-003D-6C — IMPLEMENTED, AWAITING ARCHITECT REVIEW.**
+
+[`native_accounting.py`](../src/quant/research/native_accounting.py) reconciles
+one declared synthetic scope/model/sample/build using existing forecast and
+classification records. Duplicate, missing, extra, substituted and audit-only
+identities are rejected before input sets are normalized to scope-origin order.
+The kernel derives counts, exclusive reasons, overlapping diagnostics, coverage
+and the exact scored-origin set/digest, then invokes the complete Stage A
+reconciliation validator. It neither creates missing records nor invokes Stage B
+classification. Empty synthetic scopes validate zero arithmetic only.
+
+The [6C implementation note](PQTA-003D-6C_SYNTHETIC_ACCOUNTING_KERNEL.md)
+documents the API and conservation rules. `AccountingReconciliation` retains
+fixed false historical verification, completion, PIT and decision-eligibility
+properties; no canonical fields or existing validators are weakened. The
+accounting entry point has no outcome reader, clock, file/network access,
+model call, metric calculation or writer. Stages D–F and historical completion,
+execution, reporting, dashboards, signals and trading require separate approval.
 
 ## Data boundaries
 

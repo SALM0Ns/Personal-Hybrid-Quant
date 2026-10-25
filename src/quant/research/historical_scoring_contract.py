@@ -1289,6 +1289,22 @@ class AccountingReconciliation:
     def historical_completion_authenticated(self) -> bool:
         return False
 
+    @property
+    def authenticated_historical_score(self) -> bool:
+        return False
+
+    @property
+    def historical_execution_completed(self) -> bool:
+        return False
+
+    @property
+    def point_in_time_verified(self) -> bool:
+        return False
+
+    @property
+    def decision_eligible(self) -> bool:
+        return False
+
 
 def validate_reconciliation(
     value: AccountingReconciliation,
