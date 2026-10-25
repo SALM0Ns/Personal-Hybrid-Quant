@@ -530,8 +530,30 @@ parent identity.
 This layer does not classify a historical outcome, reconcile an execution,
 authenticate a producer, issue a closed-outcome capability, or assert completed
 historical accounting. Digest validation establishes deterministic data
-integrity only. Stage B, historical execution, metrics, reporting, signals and
-trading remain unauthorized.
+integrity only. The 6A milestone did not authorize Stage B, historical
+execution, metrics, reporting, signals or trading.
+
+## PQTA-003D-6B synthetic native scoring kernel
+
+Status: **PQTA-003D-6B — IMPLEMENTED, AWAITING ARCHITECT REVIEW.**
+
+[`native_scoring.py`](../src/quant/research/native_scoring.py) implements
+`classify_native_score` over an explicit synthetic scope, expected build
+identity, immutable forecast and closed synthetic outcome. It reuses Stage A
+validation and the existing score/status/reason priorities, retaining the
+forecast's exact parent identity. A-primary retains valid endpoint-anomalous
+targets; A-sensitivity excludes them. Feature-window metadata does not create
+a global target exclusion. Unresolved required associations or linkage fail
+validation without manufacturing model abstentions.
+
+The [6B implementation note](PQTA-003D-6B_SYNTHETIC_SCORING_KERNEL.md) specifies
+the API and decision table. Original anomaly occurrences remain in the supplied
+immutable outcome, including literal `candle`/`unknown`, raw values, positions
+and multiplicity. The returned `ScoreClassification` has fixed false
+authentication, historical-completion, PIT and decision-eligibility properties.
+This callable has no source resolver, live clock, model runner or writer.
+Stages C–F, historical scoring, accounting completion, metrics, reporting,
+dashboards, signals and trading require separate authorization.
 
 ## Data boundaries
 

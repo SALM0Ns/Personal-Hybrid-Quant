@@ -946,6 +946,18 @@ class ScoreClassification:
     def authenticated_historical_score(self) -> bool:
         return False
 
+    @property
+    def historical_execution_completed(self) -> bool:
+        return False
+
+    @property
+    def point_in_time_verified(self) -> bool:
+        return False
+
+    @property
+    def decision_eligible(self) -> bool:
+        return False
+
 
 def validate_classification_parent(
     classification: ScoreClassification, forecast: HistoricalForecast
