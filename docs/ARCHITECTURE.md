@@ -16,15 +16,21 @@ Market Data
 
 | Component | Responsibility | Status |
 | --- | --- | --- |
-| Market Data | Obtain Binance Spot historical 1h OHLCV through CCXT. | Implemented for three symbols |
+| Market Data | Obtain historical OHLCV and a bounded recent BTC 1h reference window through CCXT. | Historical pipeline for three symbols; recent informational analysis for BTC/USDT |
 | Bronze | Preserve distinct raw source observations and retrieval metadata. | Implemented |
 | Silver | Validate, normalize, deduplicate, and standardize UTC records. | Implemented for hourly crypto OHLCV |
 | Gold | Create curated, analysis-ready datasets and features. | BTC/USDT gap-aware EDA and research-only seven-feature snapshot implemented; other Gold work proposed |
 | Statistical / ML Research | Evaluate hypotheses and candidate models. | Descriptive BTC/USDT EDA implemented; QNT-003 statistical evaluation designed but not executed; ML remains proposed |
-| Signal Generation | Produce `BUY`, `SELL`, `HOLD`, or `NO SIGNAL` outputs from complete data. | Proposed |
-| Risk Assessment | Assess exposure and constraints before manual action. | Proposed |
-| Dashboard | Present research, signals, and risk information. | Proposed |
+| Signal Generation | Produce informational `BUY`, `SELL`, `HOLD`, or historical `NO SIGNAL` from complete data. | Fixed mathematical rule implemented in the personal MVP; no ML or order execution |
+| Risk Assessment | Distinguish reference distances from broker/account risk. | ATR reference SL/TP implemented; position sizing, costs and margin disabled |
+| Dashboard | Present historical preview or recent informational analysis and reference levels. | Local chart and Analyze Now implemented; historical model-evaluation panel remains unimplemented |
 | Manual Trading | Human reviews and manually executes any decision. | Confirmed boundary |
+
+The current application is a Pure Mathematical / Rule-Based Quant MVP.
+Its [mathematical documentation](MATHEMATICAL_STRATEGY.md) traces the existing
+formulas, fixed parameters, ATR references and freshness guards to source.
+The historical research components below do not add ML to that application
+path, and their design/implementation records do not authorize execution.
 
 ## Implemented components
 
@@ -101,8 +107,9 @@ QNT-002B output continues to hash exact Silver Parquet bytes. The manifest
 version and canonical digest remain separate. An empty anomaly list is not
 quality proof; unknown quality availability leaves `available_at=null` and
 `decision_eligible=false`. A local observation time is not exchange
-publication time. The adapter is not connected to the chart, any fresh-data
-fetcher, model, signal engine, or order route.
+publication time. The adapter itself performs no network or order calls.
+The current informational MVP reuses it between bounded recent public data
+and the chart's fixed rule; no model or order route is connected.
 
 `.github/workflows/python-tests.yml` runs the complete offline pytest suite
 and Ruff lint/format checks on a clean GitHub Actions runner. Run
@@ -317,9 +324,10 @@ remain unimplemented; no historical performance result exists.
 The read-only Model Evaluation panel and local summary endpoint are future
 designs, not application behavior. They would display research metrics,
 coverage, provenance and unverified-PIT warnings separately from signals.
-The chart still shows `NO SIGNAL`; `Analyze Now` does not fit or evaluate
-models. Research metrics are not trading confidence. Selected-alpha
-validation replays and training-history performance claims are excluded.
+Historical preview mode still shows `NO SIGNAL`; the separate current MVP
+can display rule-based BUY/SELL/HOLD and ATR reference levels. `Analyze Now`
+does not fit or evaluate models. Research metrics are not trading confidence.
+Selected-alpha validation replays and training-history performance claims are excluded.
 No historical evaluation is authorized by this
 design; Lane B and trading backtesting remain blocked.
 

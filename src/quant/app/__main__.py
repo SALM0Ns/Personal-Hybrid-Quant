@@ -1,4 +1,4 @@
-"""Start the local PQTA-001 historical preview."""
+"""Start the local PQTA chart and informational BTC analysis."""
 
 from __future__ import annotations
 
@@ -9,7 +9,9 @@ from quant.app.server import serve
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Read-only BTC/USDT chart preview")
+    parser = argparse.ArgumentParser(
+        description="Local BTC/USDT informational analysis; manual execution only"
+    )
     parser.add_argument("--data-root", type=Path, default=Path("data"))
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--limit", type=int, default=500)

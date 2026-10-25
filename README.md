@@ -2,18 +2,28 @@
 
 ## Project Overview
 
-This repository contains a historical market-data and research foundation plus
-the Personal Quant Trading Assistant (PQTA), a local **historical** candlestick
-preview. The longer-term project is multi-asset and hybrid statistical/ML;
-the implemented application is currently limited to Binance Spot BTC/USDT 1h
-Silver data. It is not a live trading system.
+PQTA is a local personal BTC 1H dashboard. **Analyze Now** fetches completed
+Binance BTC/USDT Spot candles and displays an informational `BUY`, `SELL`, or
+`HOLD` with reasons. It reuses the existing data validators and seven-feature
+engine; no trained model or confidence estimate is involved. The current
+application is a **Pure Mathematical / Rule-Based Quant MVP**, separate from
+the repository's historical statistical/ML research components.
+
+Binance Spot is the **analysis reference**, not an Exness BTC CFD execution
+quote. Exness Demo can be used independently for later manual testing, but
+signals are not validated for Exness execution. No Exness configuration is
+required: sizing, margin checks, broker costs and orders are disabled.
+BUY/SELL assessments include ATR-based entry/SL/TP estimates labeled as
+Binance Spot references, not verified Exness CFD execution prices.
+Execution is always manual. The existing QNT research and historical data
+foundation remains intact, with a separate read-only historical chart mode.
 
 ## Project Objectives
 
 - Build a practical personal 1H crypto BUY/SELL/HOLD assistant for
   small-capital decision support, with manual execution. Research protocols
-  provide engineering safeguards against leakage; the current chart remains
-  a historical preview displaying `NO SIGNAL`.
+  provide engineering safeguards against leakage. The informational MVP uses
+  a deterministic rule; historical preview mode still displays `NO SIGNAL`.
 - Preserve and validate UTC hourly market history with explicit gap and source
   provenance.
 - Support reproducible, gap-aware statistical research and a local visual
@@ -33,11 +43,11 @@ Silver data. It is not a live trading system.
 | QNT-002A | Gap-aware EDA | Complete | Descriptive BTC/USDT research artifacts in local Gold. |
 | QNT-002B | Feature engineering | Complete; research-only | Seven-feature engine, candidate anomaly manifest, and audited local Gold snapshot. |
 | QNT-003A–D | Statistical research design | Complete; no evaluation run | Protocol `qnt-003d-design-v1` defines, but has not executed, baseline/Ridge comparisons. |
-| PQTA-001 | Local candlestick preview | Complete and regression-tested | Read-only chart with `Analyze Now` refresh and constant `NO SIGNAL`. |
+| PQTA-001 | Local candlestick preview | Complete and regression-tested | Original historical chart foundation; historical mode retains `NO SIGNAL`, while the separate MVP adds fresh informational analysis. |
 | PQTA-001A/B/C | Environment diagnosis and recovery | Complete and regression-verified | Dedicated arm64 Python 3.12 Conda environment; full 99-test regression passed. |
 | PQTA-002A | Shared feature inspection | Complete; design only | Identified the QNT-002B engine as the single formula source and approved adapter boundaries. |
-| PQTA-002B | Shared feature adapter | Complete; architecture-approved and pushed to main | Validates supplied in-memory BTC/USDT candles and reuses the offline engine; no fresh-data fetch or application integration. |
-| PQTA-002 | Shared Feature Pipeline | Partial; not operational in the chart | Offline adapter complete; fresh-data sourcing, chart integration, and inference remain future work. |
+| PQTA-002B | Shared feature adapter | Complete; architecture-approved and pushed to main | Validates supplied BTC/USDT candles and reuses the same engine; the adapter does no fetching itself and is now reused by the MVP. |
+| PQTA-002 | Shared Feature Pipeline | Shared calculations integrated with the informational chart | Fresh in-memory sourcing and chart integration reuse the adapter; ML inference is not implemented in this application. |
 | PQTA-003A | ML research and dataset inspection | Complete; read-only | Reviewed the governing protocol and local source/feature metadata; no target or evaluation was produced. |
 | PQTA-003B | Research dataset and ML architecture | Complete — Architecture Approved (Design Only) | Proposed research-only origin, forecast, and score contracts; no implementation or evaluation. |
 | PQTA-003C | Research-only origin dataset | Complete — Architecture Approved (Research Dataset Only) | Pinned Silver/Gold/manifest audit, next-hour target, split and quality masks, and immutable local origin ledger; no forecasts or evaluation. |
@@ -55,11 +65,12 @@ Silver data. It is not a live trading system.
 | PQTA-003D-6A | Native scoring/accounting types and validation | Implemented; awaiting Architect review | Immutable data-only records, strict validators, canonical serialization, and non-authoritative identities; no historical execution, scoring kernel, reconciliation kernel, or capability issuer. |
 | PQTA-003D-6B | Synthetic native scoring kernel | Implemented; awaiting Architect review | Pure classification of supplied closed synthetic forecast/outcome pairs; exact parent binding and existing sample/reason rules; no historical execution or authority issuance. |
 | PQTA-003D-6C | Synthetic native accounting kernel | Implemented; awaiting Architect review | Exact synthetic origin-set reconciliation, counts, reasons, coverage and scored-set identities over supplied forecasts/classifications; no historical completion or metrics. |
-| PQTA-003D-6D | Historical source and closed-outcome authority | Implemented; awaiting Architect review | Read-only pinned-source verification, exact ledger membership and process-local post-closure inspection capability; no historical forecasting, scoring or accounting completion. |
+| PQTA-003D-6D | Historical source and closed-outcome authority | Approved; Git closure complete | Read-only pinned-source verification, exact ledger membership and process-local post-closure inspection capability; no historical forecasting, scoring or accounting completion. |
+| Personal MVP | Informational BTC 1H analysis | Implemented; awaiting user test | Fresh completed Binance Spot candles, deterministic BUY/SELL/HOLD, ATR reference SL/TP, reasons, quality checks and expiry; no broker execution calculations. |
 | PQTA-003 | ML Training & Evaluation | Synthetic comparator components implemented; historical evaluation pending | The origin ledger is not an approved point-in-time training dataset; historical execution requires separate authorization. |
-| PQTA-004 | Signal Decision Engine | Planned; not operational | Future decision policy; the chart currently reports `NO SIGNAL`. |
+| PQTA-004 | Signal Decision Engine | Informational rule implemented; execution validation pending | The MVP has a fixed momentum rule; validated ML and broker-specific decisions remain future work. |
 | PQTA-005 | Chart Signal Integration | Planned; not operational | Future chart markers; none are displayed today. |
-| PQTA-006 | On-Demand Fresh Analysis | Planned; not operational | Future fresh-data analysis; `Analyze Now` currently refreshes local history only. |
+| PQTA-006 | On-Demand Fresh Analysis | Initial informational workflow implemented | Analyze Now fetches a bounded recent window in memory; no historical dataset is updated. |
 | PQTA-007 | Paper Trading | Deferred; not operational | Future simulation subject to separate approval; no orders are placed. |
 
 The seven implemented BTC/USDT features are `log_return_1h`,
@@ -101,11 +112,12 @@ Ridge validation candidate tuning diagnostics only; test comparisons use
 a frozen alpha. Research metrics are not trading confidence.
 Historical Lane A evaluation still needs separate authorization; Lane B and
 trading backtesting remain blocked. Inspecting a model will not select it
-for trading, and `Analyze Now` continues refreshing local history only.
+for trading. The separate MVP uses a fixed informational rule, not the
+historical evaluation runner or an automatically selected model.
 
 ## System Architecture
 
-Solid arrows below represent implemented historical/offline paths. Dotted
+Solid arrows below represent implemented historical and recent in-memory paths. Dotted
 arrows and every component in the Planned group represent future work only.
 
 ```mermaid
@@ -114,7 +126,8 @@ flowchart LR
     source["Binance Spot historical OHLCV"] --> bronze["Bronze Parquet"]
     bronze --> silver["Silver Parquet"]
     silver --> eda["QNT-002A EDA"] --> goldeda["Gold research artifacts"]
-    silver --> features["QNT-002B seven-feature engine"] --> goldfeatures["Gold research-only features"]
+    silver --> features["QNT-002B seven-feature engine"]
+    features -->|"historical job only"| goldfeatures["Gold research-only features"]
     manifest["Versioned candidate anomaly manifest"] --> features
     silver --> origins["PQTA-003C research-only origin ledger"]
     goldfeatures --> origins
@@ -135,30 +148,33 @@ flowchart LR
     supplied["Supplied in-memory BTC/USDT OHLCV; no fetch"] --> adapter["PQTA-002B shared validation adapter"] --> features
     silver --> preview["Read-only historical preview backend"]
     preview --> http["Loopback HTTP application"] --> chart["TradingView Lightweight Charts frontend"]
+    recent["On-demand Binance Spot completed candles"] --> checked["Existing validation + strict hourly continuity"]
+    checked --> adapter
+    features --> inmem["In-memory recent feature values; no Gold write"]
+    inmem --> rule["Fixed momentum rule; informational BUY / SELL / HOLD"]
+    rule --> http
   end
   subgraph planned["Planned — not operational"]
     approveddata["Future separately approved training dataset; not current Gold or origin ledger"] -.-> training["ML training and evaluation"]
     training -.-> savedmodel["Saved model"]
-    ondemand["Future on-demand fresh analysis"] -.-> fresh["Fresh market data"]
-    fresh -.-> validation["Fresh-data validation"]
-    validation -.-> sharedfeatures["Shared feature engineering"]
-    sharedfeatures -.-> inference["ML inference"]
+    futurefeatures["Future inference-approved feature inputs"] -.-> inference["ML inference"]
     savedmodel -.-> inference
     inference -.-> decisions["Signal decision engine"]
     decisions -.-> markers["BUY/SELL chart markers"]
     decisions -.-> paper["Paper trading"]
   end
   origins -.-> approveddata
-  chart -.-> ondemand
+  inmem -.-> futurefeatures
 ```
 
 The implemented Silver-to-feature-engine path is historical and offline. Its
 current Gold snapshot is **not** the future approved training dataset. The
-new adapter calls that same engine on explicitly supplied, validated in-memory
-candles; it is not connected to the chart or an exchange. The planned training
+shared adapter calls that same engine on validated in-memory candles. The
+MVP now connects bounded public Binance retrieval to that adapter and the
+chart without writing market datasets. The planned training
 path requires separate dataset eligibility and authorization;
-only its saved model would feed future inference. The current `Analyze Now`
-action rereads Silver and does not retrain or run any model.
+only its saved model would feed future inference. `Analyze Now` applies the
+fixed rule to fresh completed candles; it never retrains or runs a model.
 
 PQTA-003C constructs a separate local, research-only origin ledger from the
 pinned Silver, Gold, and candidate manifest. It carries retrospective
@@ -169,8 +185,9 @@ or backtest ran.
 See the [dataset implementation report](docs/PQTA-003C_DATASET_IMPLEMENTATION.md).
 
 The QNT research architecture proposes eventual statistical/ML research,
-signals, risk assessment, a dashboard, and **manual** trading. The local chart
-does not implement that future decision path. See [ARCHITECTURE.md](docs/ARCHITECTURE.md)
+signals, risk assessment, a dashboard, and **manual** trading. The current
+informational rule does not implement broker risk or execution support.
+See [ARCHITECTURE.md](docs/ARCHITECTURE.md)
 and [DECISIONS.md](docs/DECISIONS.md) before changing it.
 
 The longer-term proposed flow continues from market data through Bronze,
@@ -186,13 +203,13 @@ installation; unpinned package versions can change on a future install.
 | --- | --- | --- | --- | --- |
 | Environment | Anaconda / Conda | 24.11.3 installed | Isolated local development environment | Used for `pqta` |
 | Runtime | Python | 3.12.15 installed; `>=3.12` declared | Backend, research, tests | Implemented; native macOS arm64 |
-| Market ingestion | CCXT | 4.5.89 installed; unpinned declaration | Historical Binance Spot API access | Implemented historical ingestion; **not used by the chart** |
+| Market ingestion | CCXT | 4.5.89 installed; unpinned declaration | Historical ingestion and public Spot retrieval | Reused by Analyze Now; no credentials or order APIs |
 | Tabular processing | Polars | 2.0.0 installed; unpinned declaration | Bronze/Silver, feature, and research-ledger transformations | Implemented in QNT and PQTA-003C workflows |
 | Query and preview | DuckDB | 1.5.6 installed and pinned | Parquet queries and read-only chart window | Implemented |
 | Storage format | Parquet | Format; no separate package version | Local Bronze/Silver/Gold files | Implemented |
 | Validation dependency | Pandera | 0.34.1 installed; unpinned declaration | Declared validation library | Installed but not imported by current source |
 | Timezone dependency | pytz | 2026.5 installed; unpinned declaration | Declared timezone library | Installed but not imported; code uses UTC from Python stdlib |
-| Local HTTP | Python standard library | Python 3.12.15 | Loopback-only preview server | Implemented |
+| Local HTTP | Python standard library | Python 3.12.15 | Loopback-only chart and informational analysis | Implemented |
 | Frontend tooling | Node.js / npm | 22.13.1 / 10.9.2 installed locally | Install pinned chart asset | Used for local frontend setup; not Python dependencies |
 | Chart frontend | TradingView Lightweight Charts | 5.2.1 declared and installed locally | Interactive dark-theme candlesticks | Implemented |
 | Tests / lint | pytest / Ruff | 9.1.1 / 0.17.1 installed | Regression tests / lint and format | Implemented |
@@ -215,8 +232,8 @@ run the current chart.
 - **Bronze:** local Parquet preserves source observations and revisions from
   historical ingestion.
 - **Silver:** validated, deduplicated canonical hourly candles with UTC
-  timestamps. The current chart reads only the existing BTC/USDT Silver file,
-  never writing it or fetching fresh candles.
+  timestamps. Historical preview reads the existing BTC/USDT Silver file
+  without writing it. Recent analysis is a separate bounded in-memory fetch.
 - **Gold:** QNT-002A descriptive EDA artifacts and the QNT-002B seven-feature
   BTC/USDT snapshot. Both are local research outputs, not chart inputs.
 - **Research ledger:** PQTA-003C joins the pinned Silver and Gold timelines by
@@ -265,8 +282,8 @@ availability, feature values can be inspected but `available_at` stays null
 and `decision_eligible` is false. The adapter also rejects observation or
 quality evidence later than `analysis_as_of`; the expected latest candle must
 be the latest full hour closed at that boundary. Candle closure alone is not
-publication evidence. Future fresh-data evidence and inference require
-separate approval.
+publication evidence. The informational MVP does not override those fields;
+verified inference eligibility remains unresolved.
 
 Historical Gold has unknown publication availability (`available_at=null`),
 unresolved anomaly evidence, and zero `decision_eligible` rows. It does **not**
@@ -299,17 +316,42 @@ comparison timestamp digests are unchanged. No representation file is written.
 
 ## Application Workflow
 
-1. Start the local server from the repository root. It reads a bounded window
-   from the existing Silver BTC/USDT Parquet in read-only mode.
-2. The backend checks OHLCV, UTC hour alignment, duplicates, candle closure,
-   and gaps, then returns chronological chart candles or an explicit error.
-3. The browser displays a dark, interactive 1h chart, latest candle time,
-   source and quality status, and `HISTORICAL PREVIEW — NOT LIVE`.
-4. `Analyze Now` rereads that **same local history** and refreshes the chart.
-   It does not run a model, request Binance data, or generate a signal.
+1. Start the local server and open the dashboard. Its initial historical
+   preview remains clearly labeled and produces `NO SIGNAL`.
+2. Click **Load Recent Data** to view 200 recent completed hourly candles, or
+   **Analyze Now** to fetch and analyze in one step. Public Binance requests
+   have bounded retries/timeouts; no exchange credentials are used.
+3. The backend checks the Binance/local UTC clocks, latest closed hour, exact
+   consecutive coverage, duplicates and valid finite OHLCV. Stale, missing,
+   incomplete or invalid data rejects analysis; nothing is filled or repaired.
+4. The existing adapter computes the seven features in memory. No Bronze,
+   Silver, Gold or research artifact is written.
+5. The deterministic rule displays its decision, reasons, feature values,
+   source, candle timestamp, freshness and expiry. Pending, failed or expired
+   analysis clears the previous signal to `HOLD`.
 
-The signal status is always `NO SIGNAL`; no BUY/SELL markers or order route
-exist.
+The strategy uses hourly log return `ln(C_t / C_(t−1))` and simple momentum
+`C_t / C_(t−n) − 1` for `n=24,168`. BUY requires 24h momentum above
+`0.5 × volatility_24h`, positive 168h momentum and a positive hourly return;
+SELL requires all opposite signs. Equality, conflicting signs or zero
+threshold gives HOLD. `volatility_24h` is sample dispersion of 24 hourly
+returns, not annualized or cumulative-day volatility. All seven features
+must be finite, although only four directly enter the directional rule.
+
+Wilder ATR(14) sets reference distances only: entry is the latest completed
+close; BUY SL/TP are `entry − 1.5 × ATR` / `entry + 3 × ATR`, with reversed
+signs for SELL and gross **1:2** risk/reward. HOLD has no levels. ATR is seeded
+from 14 true ranges across 15 candles within the bounded 200-candle request.
+Invalid data or levels reject analysis; nothing is filled or repaired.
+Assessments expire after five minutes or the next UTC hour, whichever is first.
+
+See [Mathematical Strategy](docs/MATHEMATICAL_STRATEGY.md) for every equation,
+variable, warm-up, smoothing and freshness rule, verified bibliography and
+the distinction between mathematical definitions, published research and
+our own unvalidated parameters. Those publications do not validate this BTC
+1H strategy or its threshold/ATR multipliers. All levels are **Binance Spot
+reference estimates — not verified Exness CFD execution prices**; every
+assessment remains `actionable=false`, with no executable trade offered.
 
 ## Repository Structure
 
@@ -317,7 +359,7 @@ exist.
 | --- | --- |
 | `src/quant/ingestion/`, `src/quant/validation/` | Historical collection, canonicalization, archive and coverage checks. |
 | `src/quant/research/`, `src/quant/features/` | BTC/USDT descriptive EDA and offline feature calculations. |
-| `src/quant/app/`, `web/` | Read-only Python preview server and browser chart. |
+| `src/quant/app/`, `web/` | Local historical preview, recent-candle validation, informational analysis and browser chart. |
 | `tests/`, `.github/workflows/` | Offline regression tests and CI workflow. |
 | `configs/`, `docs/` | Availability/anomaly configuration and research decisions/reports. |
 | `data/bronze/`, `data/silver/`, `data/gold/`, `data/research/` | Ignored local datasets and research artifacts. |
@@ -357,8 +399,12 @@ python -m quant.app
 
 Open <http://127.0.0.1:8765> and stop with Ctrl-C. The default source is
 `data/silver/binance/1h/BTC-USDT.parquet`; the server binds only to loopback.
-Use `--data-root`, `--port`, or `--limit` when needed; `--limit` defaults to 500
-and is capped at 2,000 candles. The preview does not create or modify data.
+Click **Analyze Now** to fetch current reference candles and obtain a signal.
+Use `--data-root`, `--port`, or `--limit` when needed; `--limit` controls only
+historical preview (default 500, maximum 2,000). Recent requests use 200 hours.
+Neither workflow modifies the existing datasets. See [web/README.md](web/README.md)
+for practical usage and troubleshooting. No Exness setup is needed or accepted
+by this MVP; execution calculations are disabled.
 
 ## Testing and Validation
 
@@ -367,9 +413,27 @@ With `pqta` active, run from the repository root:
 ```bash
 python -m pytest -q
 ruff check .
-ruff format --check .
+ruff format --check src tests web
 python -m pip check
 ```
+
+The informational MVP acceptance run passed **1,244 tests**, including 55
+offline analysis tests and 18 mocked HTTP tests. Ruff lint/Python formatting, dependency
+and Git whitespace checks passed. A separate public Binance smoke test
+returned 200 completed contiguous hours and an informational `HOLD`; this
+checks functionality, not strategy performance. Protected historical inputs
+and research artifacts remained unchanged.
+
+The ATR reference-level extension adds 59 focused synthetic tests plus HTTP
+coverage for failed ATR calculations. The full regression passed **1,304 tests**;
+Ruff lint/Python formatting, dependency and whitespace checks passed. Live
+verification displayed ATR(14) near 285.02 USDT with HOLD and no entry/SL/TP.
+
+The broader `ruff format --check .` also checks Markdown code examples and
+currently flags unchanged examples in the approved
+[5F design](docs/PQTA-003D-5F_HISTORICAL_SCORING_ACCOUNTING_DESIGN.md) and
+[5G contract](docs/PQTA-003D-5G_NATIVE_SCORING_ACCOUNTING_IMPLEMENTATION_CONTRACT.md).
+Those research contracts were not reformatted by the MVP task.
 
 The PQTA-001 environment verification passed 15 PQTA tests, 84 QNT tests,
 and all 99 tests together. The current PQTA-002B local regression passed 122
@@ -442,17 +506,21 @@ files were not regenerated by the environment verification.
 
 ## Current Limitations
 
-- This is a historical Silver preview, not fresh or live Binance data. Its
-  displayed candles are not verified point-in-time trading inputs.
+- Recent analysis uses completed hourly Binance Spot candles, not streaming
+  broker prices. The source is an analysis reference; a signal is informational
+  and not validated for Exness execution. Existing historical preview candles
+  are not verified point-in-time trading inputs.
 - Known historical gaps and source discrepancies remain documented and
   unresolved; the chart reports gaps rather than filling them.
 - Gold and the PQTA-003C origin ledger are research-only; historical feature
   availability and decision eligibility are not established for trading or
   backtesting. The ledger's target and anomaly masks are retrospective audit
   fields, not a point-in-time-verified training sample.
-- `Analyze Now` refreshes the preview only. No ML predictions, BUY/SELL/HOLD
-  recommendations, chart markers, paper trades, brokerage connection, or
-  automated order execution are implemented.
+- The fixed strategy has no validated profitability or predictive-accuracy
+  evidence. No ML inference, confidence estimate, position size, margin
+  check, broker cost calculation, paper-trade ledger or order API is implemented.
+  ATR SL/TP are reference estimates only. No broker specifications or costs
+  are guessed. Exness testing remains manual.
 - QNT-003 specifies a research protocol, not predictive findings. Lane A
   evaluation needs separate approval; verified point-in-time Lane B remains
   blocked. No model performance or profitability claim is made.
@@ -490,16 +558,18 @@ shared adapter. PQTA-003A completed read-only inspection; PQTA-003B has a
 Its status remains Complete — Architecture Approved (Design Only). PQTA-003C
 implemented its research-only origin ledger and next-hour target; no approved
 training dataset, historical fit, historical forecast, or score has been produced. Later
-integrations remain non-operational:
+integrations remain subject to separate approval, except the explicitly
+authorized informational MVP:
 
-- **PQTA-002 — Shared Feature Pipeline:** the adapter reuses the existing
-  engine; fresh-data sourcing and chart/inference integration are not built.
+- **PQTA-002 — Shared Feature Pipeline:** implemented; the MVP reuses the
+  adapter for recent in-memory observations. ML inference is not implemented.
 - **PQTA-003 — ML Training & Evaluation:** future training on an approved
   dataset, with a saved model for separately authorized inference.
-- **PQTA-004 — Signal Decision Engine:** future policy for model outputs.
+- **PQTA-004 — Signal Decision Engine:** a fixed informational momentum rule
+  is implemented; broker execution validation and model-output policy are future work.
 - **PQTA-005 — Chart Signal Integration:** future BUY/SELL marker display.
-- **PQTA-006 — On-Demand Fresh Analysis:** future fresh-data analysis initiated
-  by the user; today's button only reloads historical Silver.
+- **PQTA-006 — On-Demand Fresh Analysis:** the initial informational workflow
+  is implemented; Analyze Now retrieves current completed Binance candles.
 - **PQTA-007 — Paper Trading:** deferred simulation, with no live orders.
 
 The manual-only execution boundary remains in force; this roadmap authorizes

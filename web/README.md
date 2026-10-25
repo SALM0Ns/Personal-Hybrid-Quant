@@ -1,76 +1,89 @@
-# PQTA-001 local candlestick preview
+# PQTA local BTC 1H dashboard
 
-This is a local, read-only chart of the existing Binance Spot BTC/USDT 1-hour
-Silver Parquet snapshot. It is a **historical preview, not live market data**.
-`Analyze Now` rereads the same local snapshot; it does not contact Binance,
-calculate features, run a model, or produce a trading recommendation. Signal
-status is always `NO SIGNAL`.
+PQTA displays completed Binance BTC/USDT Spot candles and an explainable,
+deterministic `BUY` / `SELL` / `HOLD` assessment. Binance Spot is an analysis
+reference; it is not an Exness BTC CFD execution quote. Every signal is
+informational. Execution is manual, and no broker login or order API is used.
+Position sizing, margin, broker costs and order placement are disabled.
+ATR-based entry/SL/TP values are Binance Spot reference estimates only, not
+verified Exness CFD execution prices.
+No Exness configuration is needed for this version.
 
-## Installation
+## Install and start
 
-From the repository root, with the `pqta` Conda environment already created
-as described in the [root README](../README.md), and Node/npm available:
+From the repository root, use the existing `pqta` Conda environment as described
+in the [root README](../README.md). Node/npm is needed for the locally served
+TradingView dependency:
 
 ```bash
-eval "$(conda shell.zsh hook)"  # initialize this shell; no config change
+eval "$(conda shell.zsh hook)"
 conda activate pqta
-python -m pip install -e '.[dev]'     # omit if already installed
+python -m pip install -e '.[dev]'  # omit if already installed
 npm ci --prefix web --ignore-scripts
-```
-
-## Start and open the chart
-
-From the repository root:
-
-```bash
 python -m quant.app
 ```
 
 Open <http://127.0.0.1:8765>. Stop with Ctrl-C. The server binds only to
-`127.0.0.1`; `--port` changes the port and `--limit` changes the maximum
-displayed candle count (default 500, maximum 2000). `--data-root` defaults to
-`data` relative to the directory from which the command is run. The expected
-file is `data/silver/binance/1h/BTC-USDT.parquet`. Python dependencies come
-from the existing `pyproject.toml`; the only new frontend dependency is pinned
-TradingView Lightweight Charts in `web/package-lock.json`. Its runtime files
-are installed locally under ignored `web/node_modules/`, so the page has no CDN
-requirement. No global Python or npm installation is performed.
+loopback; use `--port 8766` if necessary. `--limit` controls the historical
+preview only, and `--data-root` locates that local snapshot. Recent requests
+use 200 completed hours in memory.
+The chart dependency is pinned in `web/package-lock.json` and served from
+ignored `web/node_modules`; no CDN is required.
 
-## Analyze Now
+## Use the dashboard
 
-The page loads a bounded historical window on opening. Clicking `Analyze Now`
-rereads the same local Silver file and refreshes the chart, latest candle time,
-data-source status, and gap status. It does not ingest fresh data, calculate
-features, run ML inference, or generate a recommendation. The signal remains
-`NO SIGNAL`, including after an error.
+- The initial local view is labeled **HISTORICAL PREVIEW — NOT LIVE** and
+  displays `NO SIGNAL`. It reads the existing Silver snapshot without modifying
+  it. **Historical preview** returns to that view.
+- **Load Recent Data** requests recent completed BTC/USDT 1H reference candles.
+  It refreshes the chart, quality status, latest candle and freshness without
+  generating an assessment.
+- **Analyze Now** requests fresh completed candles and runs the deterministic
+  baseline. It displays the decision, reasons, feature values, ATR(14), market
+  timestamp and expiry. BUY/SELL also show reference entry/SL/TP and a 1:2
+  risk/reward ratio. It does not train ML or execute historical research models.
+- A pending, failed, invalid, stale or expired assessment clears any previous
+  `BUY`/`SELL` to `HOLD`. Inspect the stated reason and request fresh analysis
+  when ready. Do not interpret a missing result as an order instruction.
 
-## Troubleshooting
+The interface does not expose trade buttons, order sizes or affordability
+claims. Use Exness Demo independently if you choose to place a manual trade;
+the software has not verified that its Binance reference signal is suitable
+for that execution instrument.
 
-- If activation fails, run `eval "$(conda shell.zsh hook)"` in that zsh session
-  before `conda activate pqta`; check `python --version` after activation.
-- If the server reports a missing frontend dependency, run
-  `npm ci --prefix web --ignore-scripts` from the repository root.
-- If the page reports a missing Silver dataset, verify
-  `data/silver/binance/1h/BTC-USDT.parquet` exists locally or pass the correct
-  `--data-root`. The app does not download it.
-- If port 8765 is busy, start with `python -m quant.app --port 8766` and open
-  the corresponding localhost URL. Malformed OHLCV or an incomplete candle
-  produces a visible error rather than an invented chart value.
+## ATR reference estimates
 
-## Current limitations
+True range is `max(high − low, abs(high − previous_close),
+abs(low − previous_close))`. Wilder ATR(14) starts with the arithmetic mean
+of 14 consecutive true ranges, requiring 15 candles, then updates as
+`ATR = (13 × previous_ATR + current_true_range) / 14`. The current calculation
+uses the completed candles in the bounded recent-data window; Wilder's
+recursive result depends on that window's seed and history.
 
-The backend selects 500 recent matching Silver observations by default (up to
-2,000 with `--limit`), checks
-timestamp alignment, completed candles, OHLCV validity, duplicates, and gaps,
-then emits sorted chart data. A gap is reported rather than filled. A malformed
-or missing dataset produces a visible error and no chart candles. The chart
-uses UTC timestamps, but neither theoretical closure nor the local snapshot's
-`ingested_at` establishes historical publication availability. The source
-Gold snapshot remains research-only with unknown `available_at` and zero
-decision-eligible rows. This application does not use Gold or QNT-003 research
-protocols for decisions. Future ML integration requires separate approval and
-a shared, point-in-time-safe feature and eligibility interface.
+Entry is the latest completed Binance candle close. BUY uses
+`SL = entry − 1.5 × ATR` and `TP = entry + 3 × ATR`; SELL reverses the signs.
+HOLD has no entry/SL/TP recommendations. Pending, failed, historical and expired
+views clear all previous levels; a valid HOLD may still display ATR(14).
+These estimates do not account for Exness spread, commission, contract
+specification or execution prices and do not establish an actionable order.
 
-This chart library is produced by TradingView; see the attribution in the
-page footer and <https://www.tradingview.com/>. No BUY/SELL markers, live API
-fetching, order submission, or automated execution are implemented.
+## Troubleshooting and limits
+
+- If Conda activation fails, initialize the current zsh session with the `eval`
+  command above and check `python --version`.
+- If the chart library is missing, rerun `npm ci --prefix web --ignore-scripts`.
+- If the historical preview is missing, check
+  `data/silver/binance/1h/BTC-USDT.parquet` or pass `--data-root`. Recent-data
+  requests are separate from that local preview.
+- Recent-data loading needs connectivity to Binance. A provider failure is
+  shown explicitly; another exchange is not silently substituted.
+- Completed hourly candles are not streaming broker prices. Missing hours are
+  never filled. A freshness or quality failure prevents a usable assessment.
+
+No profitability, accuracy or model-confidence claim is made. Historical Gold
+remains research-only with unknown publication availability and zero historical
+decision-eligible rows. This dashboard does not modify those datasets or
+authorize historical model evaluation, backtesting or automated execution.
+
+TradingView Lightweight Charts is produced by TradingView; attribution appears
+in the page footer and at <https://www.tradingview.com/>.

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>BTC/USDT 1H · Historical Preview</title>
+    <title>BTC 1H · Personal Quant Trading Assistant</title>
     <link rel="stylesheet" href="/style.css">
     <script defer src="/vendor/lightweight-charts.js"></script>
     <script defer src="/app.js"></script>
@@ -12,12 +12,13 @@
     <main class="shell">
       <header class="topbar">
         <div>
-          <div class="eyebrow">PERSONAL QUANT TRADING ASSISTANT · PQTA-001</div>
-          <h1>BTC/USDT <span>1H</span></h1>
-          <p class="subtitle">Local Binance Spot Silver snapshot · candle opens in UTC</p>
+          <div class="eyebrow">PERSONAL QUANT TRADING ASSISTANT</div>
+          <h1>BTC 1H <span>— Analyze Now</span></h1>
+          <p class="subtitle">Binance BTC/USDT Spot — Analysis Reference · candle opens in UTC</p>
         </div>
         <div class="actions">
-          <span class="preview-badge">HISTORICAL PREVIEW — NOT LIVE</span>
+          <span class="preview-badge" id="mode-badge">HISTORICAL PREVIEW — NOT LIVE</span>
+          <button type="button" class="secondary" id="load-button">Load Recent Data</button>
           <button type="button" id="analyze-button">Analyze Now</button>
         </div>
       </header>
@@ -36,25 +37,71 @@
           <strong id="quality-status">Checking…</strong>
         </div>
         <div class="status-card signal-card">
-          <span class="label">SIGNAL STATUS</span>
+          <span class="label">INFORMATIONAL SIGNAL</span>
           <strong id="signal-status">NO SIGNAL</strong>
         </div>
+        <div class="status-card">
+          <span class="label">DATA FRESHNESS</span>
+          <strong id="freshness-status">Historical snapshot</strong>
+        </div>
+        <div class="status-card">
+          <span class="label">EXECUTION</span>
+          <strong>DEMO / MANUAL EXECUTION</strong>
+        </div>
+      </section>
+
+      <section class="analysis-panel" aria-labelledby="analysis-title">
+        <div class="panel-heading">
+          <div>
+            <h2 id="analysis-title">Decision and reasons</h2>
+            <p>Explainable deterministic strategy · no trained ML model or confidence estimate</p>
+          </div>
+          <span class="muted" id="signal-expiry">No current analysis</span>
+        </div>
+        <p id="decision-note" role="status" aria-live="polite">Load recent data or click Analyze Now to request a fresh assessment.</p>
+        <ul id="decision-reasons"><li>Historical preview produces no trading signal.</li></ul>
+        <section class="reference-levels" aria-labelledby="reference-levels-title">
+          <div class="reference-heading">
+            <h3 id="reference-levels-title">ATR reference levels</h3>
+            <span id="atr-method" class="muted">Not calculated</span>
+          </div>
+          <p class="reference-label">Binance Spot reference estimates — not verified Exness CFD execution prices</p>
+          <dl class="reference-values">
+            <div><dt>ATR(14)</dt><dd id="atr-value">—</dd></div>
+          </dl>
+          <dl id="reference-prices" class="reference-values" hidden>
+            <div><dt>Entry reference</dt><dd id="entry-value">—</dd></div>
+            <div><dt>Stop-loss reference</dt><dd id="stop-loss-value">—</dd></div>
+            <div><dt>Take-profit reference</dt><dd id="take-profit-value">—</dd></div>
+            <div><dt>Risk : reward</dt><dd id="risk-reward-value">—</dd></div>
+          </dl>
+          <p id="reference-levels-note" class="muted">No current reference estimates.</p>
+        </section>
+        <div class="analysis-meta">
+          <div><span class="label">MARKET CANDLE OPEN (UTC)</span><strong id="market-timestamp">—</strong></div>
+          <div><span class="label">ANALYZED AT (UTC)</span><strong id="analysis-timestamp">—</strong></div>
+          <div><span class="label">STRATEGY</span><strong id="strategy-name">Not run</strong></div>
+        </div>
+        <dl id="indicator-values" class="indicator-grid"></dl>
+        <p class="execution-warning">Position sizing, margin, broker costs and orders are disabled. Entry, SL and TP are Binance Spot reference estimates only. Signals are informational and are not validated for an Exness BTC CFD order.</p>
+        <ul id="analysis-warnings" class="warning-list"></ul>
       </section>
 
       <section class="chart-panel" aria-labelledby="chart-title">
         <div class="panel-heading">
           <div>
             <h2 id="chart-title">Historical candlesticks</h2>
-            <p>Read-only preview; no prediction, recommendation, or order action.</p>
+            <p id="chart-description">Read-only local preview. Analyze Now fetches completed reference candles.</p>
           </div>
-          <span id="candle-count">— candles</span>
+          <div class="chart-actions"><span id="candle-count">— candles</span><button type="button" class="text-button" id="preview-button">Historical preview</button></div>
         </div>
         <div id="chart" role="img" aria-label="Interactive BTC/USDT 1-hour candlestick chart"></div>
         <p id="load-status" class="load-status" role="status" aria-live="polite">Loading historical preview…</p>
       </section>
 
       <footer>
-        Historical candle closure is not proof of publication availability. This preview is not a validated point-in-time trading input.
+        Binance Spot is an analysis reference, not the Exness BTC CFD execution price or trading conditions. No broker login or order placement is connected.
+        Historical candle closure is not proof of publication availability; historical Gold remains research-only.
         TradingView Lightweight Charts™ · Copyright (с) 2025 TradingView, Inc.
         <a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer">TradingView</a>
       </footer>

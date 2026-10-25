@@ -157,10 +157,12 @@ def test_http_refresh_returns_preview_and_no_signal(tmp_path: Path) -> None:
     assert payload["candle_count"] == 1
 
 
-def test_frontend_keeps_historical_warning_and_no_signal() -> None:
+def test_frontend_separates_historical_preview_from_informational_analysis() -> None:
     root = Path(__file__).resolve().parents[1] / "web"
     html = (root / "index.html").read_text()
     js = (root / "app.js").read_text()
     assert "HISTORICAL PREVIEW — NOT LIVE" in html
-    assert 'signal.textContent = "NO SIGNAL"' in js
-    assert "BUY" not in js and "SELL" not in js
+    assert "NO SIGNAL" in js
+    assert "/api/preview" in js and "/api/analyze" in js
+    assert "informational" in html.lower()
+    assert "not validated" in html.lower()
