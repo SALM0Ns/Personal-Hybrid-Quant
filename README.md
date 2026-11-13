@@ -1,3 +1,45 @@
+# Personal Hybrid Quant — Monorepo
+
+This repository preserves the original **Personal Hybrid Quant** data-engineering
+and research project and brings the independent **Hybrid Quant Terminal** into
+`apps/hybrid-quant-terminal/` as the primary current personal-use application.
+The original Binance pipeline, feature engine, research contracts, tests and
+application remain at the repository root. The projects are separate: each has
+its own dependencies, environment, data contracts and setup instructions. The
+original project's documentation follows below, unchanged.
+
+## Hybrid Quant Terminal
+
+The terminal is a local MT5 analysis and visualization application for
+EURUSDm and XAUUSDm on M15, H1 and H4. Its read-only file bridge, Python API,
+analytics and React dashboard provide informational levels and diagnostics;
+they do not place orders. **Status: v1.0 Conditional — Limited Demo Use.**
+Trading decisions and execution remain manual. This is not a claim of
+profitability, production readiness or suitability for real-money decisions.
+
+Feed validation and `WAIT` / `BLOCKED_UNVERIFIED` safeguards remain in force.
+Broker-clock timezone, historical coverage, data-source authentication, broker
+risk specifications and execution costs may be unverified. A displayed price
+or setup is not proof that a trade is eligible or executable.
+
+For the existing local installation, with its Demo MT5 bridge and local
+configuration already set up, run:
+
+```bash
+cd "$HOME/Developer/mt5-market-data"
+.venv/bin/python tools/devctl.py start
+```
+
+Open [the local dashboard](http://127.0.0.1:5173/). From that installation,
+`.venv/bin/python tools/devctl.py status` checks the services and
+`.venv/bin/python tools/devctl.py stop` stops them. The monorepo import does
+not migrate the existing installation or its state; a new checkout needs a
+separate environment and appropriate local configuration. See the
+[terminal README](apps/hybrid-quant-terminal/README.md) for setup, data quality
+and operational restrictions. Do not publish local receipts or runtime data.
+
+---
+
 # Personal Hybrid Quant — Personal Quant Trading Assistant (PQTA)
 
 ## Project Overview

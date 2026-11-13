@@ -1,0 +1,44 @@
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.venv/
+.test-tmp/
+data/raw/*
+data/bronze/*
+data/silver/*
+data/reports/*
+
+frontend/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+
+# Local credentials and licensed external market data
+.env
+.env.*
+!.env.example
+data/external/
+
+# Local mutable MT5 handoff state
+runtime/
+
+# Local developer processes and source-copy provenance
+.local-dev/
+developer-copy-manifest.json
+
+# Local-only runtime cutover backups and migration scratch
+runtime-backups/
+
+# Local platform-specific dependency wheel cache
+.wheelhouse/
+
+# Defense in depth: local market data, generated artifacts and compiled MQL5
+/data/
+/outputs/
+*.parquet
+*.csv
+*.duckdb
+*.sqlite
+*.sqlite3
+*.db
+*.ex5
+.DS_Store
